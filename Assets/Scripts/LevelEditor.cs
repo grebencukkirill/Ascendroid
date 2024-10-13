@@ -2,200 +2,124 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Tilemaps;
 
 public class LevelEditor : MonoBehaviour
 {
-    /*
-    public List<DeviceInfo> devices;
-    public Transform devicePanel;
-    public GameObject deviceButtonPrefab;
-    public Button eraseButton;
-    public Button clearButton;
-    public Button startButton;
+    public DevicePanel devicePanel;          // Ссылка на панель устройств
+    public GameObject[] devicePrefabs;       // Массив префабов для каждого устройства
+    public LayerMask groundLayer;            // Слой для проверки Ground
+    public LayerMask placementLayer;         // Слой для проверки, где нельзя размещать устройства
 
-    private DeviceInfo selectedDevice;
-    private GameObject silhouetteInstance;
-    private bool eraserMode = false;
-    private Vector3 robotStartPosition;
+    private GameObject devicePreview;        // Объект для предварительного просмотра устройства
+    private int selectedDeviceIndex = -1;    // Индекс выбранного устройства из панели устройств
+
+    private Color validColor = Color.green;  // Цвет, когда устройство можно поставить
+    private Color invalidColor = Color.red;  // Цвет, когда устройство нельзя поставить
 
     void Start()
     {
-        robotStartPosition = GameObject.FindGameObjectWithTag("Player").transform.position;
-
-        // Создаем кнопки для каждого устройства
-        for (int i = devices.Count - 1; i >= 0; i--)
-        {
-            if (devices[i].deviceCount > 0)
-            {
-                GameObject newButton = Instantiate(deviceButtonPrefab, devicePanel);
-                newButton.GetComponentInChildren<Image>().sprite = devices[i].deviceIcon;
-                newButton.GetComponentInChildren<Text>().text = devices[i].deviceCount.ToString();
-
-                int index = i;
-                newButton.GetComponent<Button>().onClick.AddListener(() => SelectDevice(index));
-            }
-            else
-            {
-                devices.RemoveAt(i);
-            }
-        }
-
-        // Привязываем функции к кнопкам
-        eraseButton.onClick.AddListener(ActivateEraser);
-        clearButton.onClick.AddListener(ClearAllDevices);
-        startButton.onClick.AddListener(ToggleGameMode);
+        // При запуске игры активируем режим редактора и ставим игру на паузу
+        Time.timeScale = 0f;
+        InitializeEditor();
     }
 
     void Update()
     {
-        if (selectedDevice != null)
+        if (selectedDeviceIndex >= 0)
         {
-            UpdateSilhouettePosition();
-
+            MoveDevicePreview();
             if (Input.GetMouseButtonDown(0))
             {
                 PlaceDevice();
             }
         }
+    }
 
-        if (eraserMode && Input.GetMouseButtonDown(0))
+    // Инициализация редактора уровня
+    void InitializeEditor()
+    {
+        selectedDeviceIndex = -1;
+        devicePreview = null;
+    }
+
+    // Метод для установки превью устройства за курсором
+    void MoveDevicePreview()
+    {
+        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 gridPosition = new Vector3(Mathf.Round(mousePosition.x), Mathf.Round(mousePosition.y), 0);
+
+        // Перемещение устройства за курсором
+        if (devicePreview != null)
         {
-            EraseDevice();
+            devicePreview.transform.position = gridPosition;
+            UpdateDevicePreviewColor(gridPosition);
         }
     }
 
-    void SelectDevice(int index)
+    // Обновление цвета устройства для визуальной индикации возможности размещения
+    void UpdateDevicePreviewColor(Vector3 position)
     {
-        eraserMode = false;
-        selectedDevice = devices[index];
-
-        if (silhouetteInstance != null)
+        SpriteRenderer spriteRenderer = devicePreview.GetComponent<SpriteRenderer>();
+        if (CanPlaceDevice(position))
         {
-            Destroy(silhouetteInstance);
-        }
-
-        silhouetteInstance = Instantiate(selectedDevice.deviceSilhouette);
-        silhouetteInstance.SetActive(true);
-    }
-
-    void ActivateEraser()
-    {
-        selectedDevice = null;
-        eraserMode = true;
-
-        if (silhouetteInstance != null)
-        {
-            Destroy(silhouetteInstance);
-        }
-    }
-
-    void ClearAllDevices()
-    {
-        GameObject[] placedDevices = GameObject.FindGameObjectsWithTag("PlacedDevice");
-
-        foreach (GameObject device in placedDevices)
-        {
-            Destroy(device);
-        }
-    }
-
-    void ToggleGameMode()
-    {
-        bool isInEditMode = Time.timeScale == 0;
-
-        if (isInEditMode)
-        {
-            Time.timeScale = 1;
-            startButton.GetComponentInChildren<Text>().text = "Pause";
+            spriteRenderer.color = validColor;
         }
         else
         {
-            Time.timeScale = 0;
-            GameObject.FindGameObjectWithTag("Player").transform.position = robotStartPosition;
-            startButton.GetComponentInChildren<Text>().text = "Start";
+            spriteRenderer.color = invalidColor;
         }
     }
 
-    void UpdateSilhouettePosition()
-    {
-        Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector3 alignedPosition = new Vector3(Mathf.Round(mouseWorldPosition.x), Mathf.Round(mouseWorldPosition.y), 0);
-
-        if (CanPlaceDevice(alignedPosition))
-        {
-            silhouetteInstance.transform.position = alignedPosition;
-            silhouetteInstance.GetComponent<SpriteRenderer>().color = Color.green;
-        }
-        else
-        {
-            silhouetteInstance.GetComponent<SpriteRenderer>().color = Color.red;
-        }
-    }
-
+    // Проверка возможности размещения устройства на выбранной позиции
     bool CanPlaceDevice(Vector3 position)
     {
-        Collider2D hitCollider = Physics2D.OverlapCircle(position, 0.1f);
+        Collider2D collision = Physics2D.OverlapCircle(position, 0.4f, placementLayer);
 
-        if (hitCollider != null)
+        if (collision != null)
         {
+            // Если что-то уже есть на позиции, не можем ставить
             return false;
         }
 
-        // Если устройство имеет особые правила (например, Jump, Springboard)
-        if (selectedDevice.deviceName == "Jump" || selectedDevice.deviceName == "Springboard" || selectedDevice.deviceName == "GravChange")
+        // Проверяем специальные устройства
+        if (selectedDeviceIndex == 1 || selectedDeviceIndex == 2 || selectedDeviceIndex == 3) // Индексы GravChange, Jump и Springboard
         {
-            RaycastHit2D hitGround = Physics2D.Raycast(position, Vector2.down, 1f, LayerMask.GetMask("Ground"));
+            RaycastHit2D hitBelow = Physics2D.Raycast(position, Vector2.down, 1f, groundLayer);
+            RaycastHit2D hitAbove = Physics2D.Raycast(position, Vector2.up, 1f, groundLayer);
 
-            if (!hitGround)
+            if (!hitBelow && !hitAbove)
             {
-                return false;
+                return false; // Устройство должно иметь Ground сверху или снизу
             }
         }
 
         return true;
     }
 
+    // Установка устройства на выбранной позиции
     void PlaceDevice()
     {
-        if (CanPlaceDevice(silhouetteInstance.transform.position))
+        Vector3 position = devicePreview.transform.position;
+
+        if (CanPlaceDevice(position))
         {
-            Instantiate(selectedDevice.devicePrefab, silhouetteInstance.transform.position, Quaternion.identity);
-            selectedDevice.deviceCount--;
-
-            if (selectedDevice.deviceCount <= 0)
-            {
-                Destroy(devicePanel.GetChild(devices.IndexOf(selectedDevice)).gameObject);
-                devices.Remove(selectedDevice);
-                selectedDevice = null;
-
-                Destroy(silhouetteInstance);
-            }
-            else
-            {
-                devicePanel.GetChild(devices.IndexOf(selectedDevice)).GetComponentInChildren<Text>().text = selectedDevice.deviceCount.ToString();
-            }
+            Instantiate(devicePrefabs[selectedDeviceIndex], position, Quaternion.identity);
         }
     }
 
-    void EraseDevice()
+    // Метод для обновления выбранного устройства
+    public void UpdateSelectedDevice(int deviceIndex)
     {
-        Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector3 alignedPosition = new Vector3(Mathf.Round(mouseWorldPosition.x), Mathf.Round(mouseWorldPosition.y), 0);
-
-        Collider2D hitCollider = Physics2D.OverlapCircle(alignedPosition, 0.1f);
-
-        if (hitCollider != null && hitCollider.CompareTag("PlacedDevice"))
+        if (devicePreview != null)
         {
-            Destroy(hitCollider.gameObject);
-
-            // Найти соответствующий DeviceInfo и увеличить его количество
-            DeviceInfo deviceInfo = devices.Find(d => d.devicePrefab == hitCollider.gameObject);
-            if (deviceInfo != null)
-            {
-                deviceInfo.deviceCount++;
-                devicePanel.GetChild(devices.IndexOf(deviceInfo)).GetComponentInChildren<Text>().text = deviceInfo.deviceCount.ToString();
-            }
+            Destroy(devicePreview);
         }
+
+        selectedDeviceIndex = deviceIndex;
+
+        // Создаём силуэт устройства
+        devicePreview = Instantiate(devicePrefabs[selectedDeviceIndex]);
+        devicePreview.GetComponent<SpriteRenderer>().color = invalidColor; // Устанавливаем цвет в качестве начального
     }
-    */
 }

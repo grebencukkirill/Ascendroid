@@ -7,21 +7,26 @@ using TMPro;
 public class DevicePanel : MonoBehaviour
 {
     [Header("UI Elements")]
-    public Button[] deviceButtons;           // Массив кнопок для устройств (6 кнопок)
-    public Sprite[] deviceSprites;           // Массив спрайтов для устройств
-    public TextMeshProUGUI[] deviceCountTexts; // Массив TextMeshPro для отображения количества устройств
+    public Button[] deviceButtons;              // Массив кнопок для устройств (6 кнопок)
+    public Sprite[] deviceSprites;              // Массив спрайтов для устройств
+    public TextMeshProUGUI[] deviceCountTexts;  // Массив TextMeshPro для отображения количества устройств
 
-    public Button eraseButton;               // Кнопка ластика
-    public Button clearButton;               // Кнопка очистки
+    public Button eraseButton;                  // Кнопка ластика
+    public Button clearButton;                  // Кнопка очистки
+    public Sprite selectedButtonSprite;         // Спрайт для выделенной кнопки
 
     [Header("Device Counts")]
-    public int[] deviceCounts;               // Массив для хранения количества каждого устройства
+    public int[] deviceCounts;                  // Массив для хранения количества каждого устройства
 
-    private Button selectedButton;           // Текущая выделенная кнопка
-    private Outline selectedOutline;         // Текущий выделенный объект Outline
+    private Button selectedButton;              // Текущая выделенная кнопка
+    private Sprite[] originalButtonSprites;     // Массив для хранения оригинальных спрайтов кнопок
+
+    private Color normalColor = new Color32(0x3A, 0x62, 0x73, 0xFF); // Обычный цвет
+    private Color selectedColor = new Color32(0x4C, 0x8D, 0xA8, 0xFF); // Цвет выделения
 
     void Start()
     {
+        originalButtonSprites = new Sprite[deviceButtons.Length];
         SetupDeviceButtons();
     }
 
@@ -30,16 +35,13 @@ public class DevicePanel : MonoBehaviour
     {
         int activeButtonIndex = 0;
 
-        // Проходим по каждой кнопке устройства и настраиваем её
         for (int i = 0; i < deviceCounts.Length; i++)
         {
             if (deviceCounts[i] > 0)
             {
-                // Активируем кнопку и делаем её интерактивной
                 deviceButtons[activeButtonIndex].gameObject.SetActive(true);
                 deviceButtons[activeButtonIndex].interactable = true;
 
-                // Находим дочерний объект UI_DeviceButton_Icon и задаем ему спрайт
                 Transform iconTransform = deviceButtons[activeButtonIndex].transform.Find("UI_DeviceButton_Icon");
                 if (iconTransform != null)
                 {
@@ -48,21 +50,21 @@ public class DevicePanel : MonoBehaviour
                     {
                         iconImage.sprite = deviceSprites[i];
                         iconImage.enabled = true; // Включаем отображение иконки
+                        iconImage.color = normalColor; // Устанавливаем стандартный цвет
                     }
                 }
 
-                // Устанавливаем количество устройств в TextMeshPro
+                originalButtonSprites[activeButtonIndex] = deviceButtons[activeButtonIndex].image.sprite;
                 deviceCountTexts[activeButtonIndex].text = deviceCounts[i].ToString();
+                deviceCountTexts[activeButtonIndex].color = normalColor; // Устанавливаем стандартный цвет текста
 
-                // Обрабатываем клик по кнопке устройства
-                int index = activeButtonIndex;  // Используем индекс кнопки, а не устройства
+                int index = activeButtonIndex;
                 deviceButtons[activeButtonIndex].onClick.AddListener(() => OnDeviceButtonClicked(deviceButtons[index], i));
 
                 activeButtonIndex++;
             }
         }
 
-        // Деактивируем и делаем неинтерактивными оставшиеся кнопки
         for (int j = activeButtonIndex; j < deviceButtons.Length; j++)
         {
             deviceButtons[j].interactable = false; // Делаем кнопку неинтерактивной
@@ -81,8 +83,6 @@ public class DevicePanel : MonoBehaviour
 
         // Настраиваем кнопку ластика
         eraseButton.onClick.AddListener(() => OnEraseButtonClicked());
-
-        // Настраиваем кнопку очистки
         clearButton.onClick.AddListener(() => OnClearButtonClicked());
     }
 
@@ -91,7 +91,6 @@ public class DevicePanel : MonoBehaviour
     {
         SelectButton(button);
 
-        // Передаем информацию в другой скрипт (например, выбранное устройство)
         Debug.Log("Selected device index: " + deviceIndex);
     }
 
@@ -99,45 +98,51 @@ public class DevicePanel : MonoBehaviour
     void OnEraseButtonClicked()
     {
         SelectButton(eraseButton);
-
-        // Передаем информацию о том, что выбрана функция ластика
         Debug.Log("Erase mode selected");
     }
 
     // Обработчик нажатия на кнопку очистки
     void OnClearButtonClicked()
     {
-        // Вызываем функцию очистки из другого скрипта
         Debug.Log("Clear all devices");
-
-        // Временно выделяем кнопку очистки
-        Outline outline = clearButton.GetComponent<Outline>();
-        outline.enabled = true;
-        Invoke(nameof(DisableClearOutline), 0.2f);  // Убираем выделение через 0.2 секунды
     }
 
-    // Убираем выделение с кнопки очистки
-    void DisableClearOutline()
-    {
-        clearButton.GetComponent<Outline>().enabled = false;
-    }
-
-    // Метод для выделения выбранной кнопки
     void SelectButton(Button button)
     {
-        // Снимаем выделение с предыдущей кнопки
-        if (selectedOutline != null)
+        if (selectedButton != null)
         {
-            selectedOutline.enabled = false;
+            int prevIndex = System.Array.IndexOf(deviceButtons, selectedButton);
+            if (prevIndex >= 0)
+            {
+                Transform prevIconTransform = selectedButton.transform.Find("UI_DeviceButton_Icon");
+                if (prevIconTransform != null)
+                {
+                    Image prevIconImage = prevIconTransform.GetComponent<Image>();
+                    if (prevIconImage != null)
+                    {
+                        prevIconImage.color = normalColor; // Восстанавливаем цвет иконки
+                    }
+                }
+                deviceCountTexts[prevIndex].color = normalColor; // Восстанавливаем цвет текста
+            }
         }
 
-        // Устанавливаем выделение на новой кнопке
         selectedButton = button;
-        selectedOutline = button.GetComponent<Outline>();
+        int selectedIndex = System.Array.IndexOf(deviceButtons, selectedButton);
 
-        if (selectedOutline != null)
+        if (selectedIndex >= 0)
         {
-            selectedOutline.enabled = true;
+            Transform iconTransform = selectedButton.transform.Find("UI_DeviceButton_Icon");
+            if (iconTransform != null)
+            {
+                Image iconImage = iconTransform.GetComponent<Image>();
+                if (iconImage != null)
+                {
+                    iconImage.color = selectedColor; // Меняем цвет иконки на выделенный
+                }
+            }
+            deviceCountTexts[selectedIndex].color = selectedColor; // Меняем цвет текста на выделенный
         }
     }
+
 }
