@@ -191,6 +191,12 @@ public class RobotController : MonoBehaviour
         }
     }
 
+    public void ResetPhysicsState()
+    {
+        rb.velocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+    }
+
     public void PlayAnimation(string animationName)
     {
         animator.Play(isReversed ? $"Robot_Reversed_{animationName}" : $"Robot_{animationName}");
