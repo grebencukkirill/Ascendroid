@@ -6,120 +6,65 @@ using UnityEngine.Tilemaps;
 
 public class LevelEditor : MonoBehaviour
 {
-    public DevicePanel devicePanel;          // Ссылка на панель устройств
-    public GameObject[] devicePrefabs;       // Массив префабов для каждого устройства
-    public LayerMask groundLayer;            // Слой для проверки Ground
-    public LayerMask placementLayer;         // Слой для проверки, где нельзя размещать устройства
+    public RobotController robotController; // Ссылка на RobotController
+    public Transform robot;               // Ссылка на объект робота
+    public Vector3 startPosition;         // Начальная позиция для робота
+    public Button editorToggleButton;     // Кнопка для включения/выключения режима редактора
+    public Sprite editorOnSprite;         // Спрайт для кнопки в режиме редактора
+    public Sprite editorOffSprite;        // Спрайт для кнопки вне режима редактора
 
-    private GameObject devicePreview;        // Объект для предварительного просмотра устройства
-    private int selectedDeviceIndex = -1;    // Индекс выбранного устройства из панели устройств
-
-    private Color validColor = Color.green;  // Цвет, когда устройство можно поставить
-    private Color invalidColor = Color.red;  // Цвет, когда устройство нельзя поставить
+    private bool isEditorMode = true;     // Флаг режима редактора
 
     void Start()
     {
-        // При запуске игры активируем режим редактора и ставим игру на паузу
-        Time.timeScale = 0f;
-        InitializeEditor();
+        // Ставим игру на паузу при старте сцены
+        Debug.Log("Entering Editor Mode at Start");
+        EnterEditorMode();
+
+        // Назначаем начальное положение робота
+        robot.position = startPosition;
     }
 
-    void Update()
+    public void ToggleEditorMode()
     {
-        if (selectedDeviceIndex >= 0)
+        Debug.Log("Toggle Editor Mode called");
+        if (isEditorMode)
         {
-            MoveDevicePreview();
-            if (Input.GetMouseButtonDown(0))
-            {
-                PlaceDevice();
-            }
-        }
-    }
-
-    // Инициализация редактора уровня
-    void InitializeEditor()
-    {
-        selectedDeviceIndex = -1;
-        devicePreview = null;
-    }
-
-    // Метод для установки превью устройства за курсором
-    void MoveDevicePreview()
-    {
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector3 gridPosition = new Vector3(Mathf.Round(mousePosition.x), Mathf.Round(mousePosition.y), 0);
-
-        // Перемещение устройства за курсором
-        if (devicePreview != null)
-        {
-            devicePreview.transform.position = gridPosition;
-            UpdateDevicePreviewColor(gridPosition);
-        }
-    }
-
-    // Обновление цвета устройства для визуальной индикации возможности размещения
-    void UpdateDevicePreviewColor(Vector3 position)
-    {
-        SpriteRenderer spriteRenderer = devicePreview.GetComponent<SpriteRenderer>();
-        if (CanPlaceDevice(position))
-        {
-            spriteRenderer.color = validColor;
+            Debug.Log("Exiting Editor Mode");
+            ExitEditorMode();
         }
         else
         {
-            spriteRenderer.color = invalidColor;
+            Debug.Log("Entering Editor Mode");
+            EnterEditorMode();
         }
     }
 
-    // Проверка возможности размещения устройства на выбранной позиции
-    bool CanPlaceDevice(Vector3 position)
+    // Вход в режим редактора
+    void EnterEditorMode()
     {
-        Collider2D collision = Physics2D.OverlapCircle(position, 0.4f, placementLayer);
+        isEditorMode = true;
+        Time.timeScale = 0f;  // Ставим игру на паузу
+        robot.position = startPosition;  // Возвращаем робота на начальную позицию
 
-        if (collision != null)
-        {
-            // Если что-то уже есть на позиции, не можем ставить
-            return false;
-        }
+        robotController.ResetGravity();
+        robotController.ResetDirection();
 
-        // Проверяем специальные устройства
-        if (selectedDeviceIndex == 1 || selectedDeviceIndex == 2 || selectedDeviceIndex == 3) // Индексы GravChange, Jump и Springboard
-        {
-            RaycastHit2D hitBelow = Physics2D.Raycast(position, Vector2.down, 1f, groundLayer);
-            RaycastHit2D hitAbove = Physics2D.Raycast(position, Vector2.up, 1f, groundLayer);
+        // Меняем спрайт кнопки на режим включенного редактора
+        editorToggleButton.image.sprite = editorOnSprite;
 
-            if (!hitBelow && !hitAbove)
-            {
-                return false; // Устройство должно иметь Ground сверху или снизу
-            }
-        }
-
-        return true;
+        Debug.Log("Editor Mode is now ON");
     }
 
-    // Установка устройства на выбранной позиции
-    void PlaceDevice()
+    // Выход из режима редактора
+    void ExitEditorMode()
     {
-        Vector3 position = devicePreview.transform.position;
+        isEditorMode = false;
+        Time.timeScale = 1f;  // Снимаем паузу
 
-        if (CanPlaceDevice(position))
-        {
-            Instantiate(devicePrefabs[selectedDeviceIndex], position, Quaternion.identity);
-        }
-    }
+        // Меняем спрайт кнопки на режим выключенного редактора
+        editorToggleButton.image.sprite = editorOffSprite;
 
-    // Метод для обновления выбранного устройства
-    public void UpdateSelectedDevice(int deviceIndex)
-    {
-        if (devicePreview != null)
-        {
-            Destroy(devicePreview);
-        }
-
-        selectedDeviceIndex = deviceIndex;
-
-        // Создаём силуэт устройства
-        devicePreview = Instantiate(devicePrefabs[selectedDeviceIndex]);
-        devicePreview.GetComponent<SpriteRenderer>().color = invalidColor; // Устанавливаем цвет в качестве начального
+        Debug.Log("Editor Mode is now OFF");
     }
 }

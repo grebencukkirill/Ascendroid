@@ -174,10 +174,27 @@ public class RobotController : MonoBehaviour
 
     }
 
+    public void ResetGravity()
+    {
+        if (isGravChanged) // —брос только если гравитаци€ была изменена
+        {
+            ChangeGravity();
+        }
+    }
+
+    // ћетод дл€ сброса направлени€ разворота
+    public void ResetDirection()
+    {
+        if (isReversed) // —брос только если робот был развЄрнут
+        {
+            StartCoroutine(ReverseDirection());
+        }
+    }
 
     public void PlayAnimation(string animationName)
     {
         animator.Play(isReversed ? $"Robot_Reversed_{animationName}" : $"Robot_{animationName}");
     }
+     
 }
 
