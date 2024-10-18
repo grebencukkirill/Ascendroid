@@ -18,6 +18,10 @@ public class DevicePanel : MonoBehaviour
     [Header("Device Counts")]
     public int[] deviceCounts;                  // Массив для хранения количества каждого устройства
 
+    [Header("Device Prefabs")]
+    public GameObject[] devicePrefabs;          // Массив для хранения префабов устройств
+    public LevelEditor levelEditor;             // Ссылка на LevelEditor для передачи выбранного устройства
+
     private Button selectedButton;              // Текущая выделенная кнопка
     private Sprite[] originalButtonSprites;     // Массив для хранения оригинальных спрайтов кнопок
 
@@ -58,30 +62,29 @@ public class DevicePanel : MonoBehaviour
                 deviceCountTexts[activeButtonIndex].text = deviceCounts[i].ToString();
                 deviceCountTexts[activeButtonIndex].color = normalColor; // Устанавливаем стандартный цвет текста
 
-                int index = activeButtonIndex;
-                deviceButtons[activeButtonIndex].onClick.AddListener(() => OnDeviceButtonClicked(deviceButtons[index], i));
-
+                int index = i;
+                deviceButtons[activeButtonIndex].onClick.AddListener(() => OnDeviceButtonClicked(deviceButtons[activeButtonIndex], index));
                 activeButtonIndex++;
             }
         }
 
+        // Отключаем оставшиеся кнопки
         for (int j = activeButtonIndex; j < deviceButtons.Length; j++)
         {
-            deviceButtons[j].interactable = false; // Делаем кнопку неинтерактивной
+            deviceButtons[j].interactable = false;
             Transform iconTransform = deviceButtons[j].transform.Find("UI_DeviceButton_Icon");
             if (iconTransform != null)
             {
                 Image iconImage = iconTransform.GetComponent<Image>();
                 if (iconImage != null)
                 {
-                    iconImage.sprite = null;   // Убираем иконку устройства
-                    iconImage.enabled = false; // Скрываем Image
+                    iconImage.sprite = null;
+                    iconImage.enabled = false;
                 }
             }
-            deviceCountTexts[j].text = ""; // Очищаем текст количества устройств
+            deviceCountTexts[j].text = "";
         }
 
-        // Настраиваем кнопку ластика
         eraseButton.onClick.AddListener(() => OnEraseButtonClicked());
         clearButton.onClick.AddListener(() => OnClearButtonClicked());
     }
@@ -91,7 +94,16 @@ public class DevicePanel : MonoBehaviour
     {
         SelectButton(button);
 
-        Debug.Log("Selected device index: " + deviceIndex);
+        // Передаем выбранный префаб в LevelEditor
+        if (deviceIndex >= 0 && deviceIndex < devicePrefabs.Length && deviceCounts[deviceIndex] > 0)
+        {
+            levelEditor.SetSelectedDevice(devicePrefabs[deviceIndex]);
+            Debug.Log("Selected device index: " + deviceIndex);
+        }
+        else
+        {
+            Debug.LogWarning("Device index out of bounds or no devices left.");
+        }
     }
 
     // Обработчик нажатия на кнопку ластика
@@ -107,6 +119,7 @@ public class DevicePanel : MonoBehaviour
         Debug.Log("Clear all devices");
     }
 
+    // Метод для выделения кнопки
     void SelectButton(Button button)
     {
         if (selectedButton != null)
@@ -144,5 +157,4 @@ public class DevicePanel : MonoBehaviour
             deviceCountTexts[selectedIndex].color = selectedColor; // Меняем цвет текста на выделенный
         }
     }
-
 }

@@ -5836,7 +5836,6 @@ GameObject:
   - component: {fileID: 684392676}
   - component: {fileID: 684392678}
   - component: {fileID: 684392677}
-  - component: {fileID: 684392679}
   m_Layer: 5
   m_Name: UI_DevicePanel_Background
   m_TagString: Untagged
@@ -5901,43 +5900,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 684392675}
   m_CullTransparentMesh: 1
---- !u!114 &684392679
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 684392675}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f8e5c9f35a87a5f47be5de8930792faf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  deviceButtons:
-  - {fileID: 1940985111}
-  - {fileID: 1625767275}
-  - {fileID: 127338459}
-  - {fileID: 572070}
-  - {fileID: 1244885625}
-  - {fileID: 2027233244}
-  deviceSprites:
-  - {fileID: -776452831, guid: 58c66c98817cc394fb24649a81f4bee1, type: 3}
-  - {fileID: 1348045084, guid: 58c66c98817cc394fb24649a81f4bee1, type: 3}
-  - {fileID: 1148821863, guid: 58c66c98817cc394fb24649a81f4bee1, type: 3}
-  - {fileID: -1192764279, guid: 58c66c98817cc394fb24649a81f4bee1, type: 3}
-  - {fileID: 1930603919, guid: 58c66c98817cc394fb24649a81f4bee1, type: 3}
-  - {fileID: -360918359, guid: 58c66c98817cc394fb24649a81f4bee1, type: 3}
-  deviceCountTexts:
-  - {fileID: 1732651874}
-  - {fileID: 1575559518}
-  - {fileID: 253117614}
-  - {fileID: 357808974}
-  - {fileID: 81929633}
-  - {fileID: 458930350}
-  eraseButton: {fileID: 519458940}
-  clearButton: {fileID: 86684854}
-  selectedButtonSprite: {fileID: -1282254513, guid: 42d8285d22927b143a2583fa4f08258c, type: 3}
-  deviceCounts: 020000000000000004000000090000000100000002000000
 --- !u!1 &691067835
 GameObject:
   m_ObjectHideFlags: 0
@@ -15888,6 +15850,8 @@ MonoBehaviour:
   clearButton: {fileID: 1770124751}
   selectedButtonSprite: {fileID: 0}
   deviceCounts: 010000000400000002000000000000000500000002000000
+  devicePrefabs: []
+  levelEditor: {fileID: 0}
 --- !u!1 &1850585005
 GameObject:
   m_ObjectHideFlags: 0
@@ -15899,6 +15863,7 @@ GameObject:
   - component: {fileID: 1850585006}
   - component: {fileID: 1850585008}
   - component: {fileID: 1850585007}
+  - component: {fileID: 1850585009}
   m_Layer: 5
   m_Name: UI_DevicePanel
   m_TagString: Untagged
@@ -15971,6 +15936,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1850585005}
   m_CullTransparentMesh: 1
+--- !u!114 &1850585009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1850585005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8e5c9f35a87a5f47be5de8930792faf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deviceButtons:
+  - {fileID: 1940985111}
+  - {fileID: 1625767275}
+  - {fileID: 127338459}
+  - {fileID: 572070}
+  - {fileID: 1244885625}
+  - {fileID: 2027233244}
+  deviceSprites:
+  - {fileID: -776452831, guid: 58c66c98817cc394fb24649a81f4bee1, type: 3}
+  - {fileID: 1348045084, guid: 58c66c98817cc394fb24649a81f4bee1, type: 3}
+  - {fileID: 1148821863, guid: 58c66c98817cc394fb24649a81f4bee1, type: 3}
+  - {fileID: -1192764279, guid: 58c66c98817cc394fb24649a81f4bee1, type: 3}
+  - {fileID: 1930603919, guid: 58c66c98817cc394fb24649a81f4bee1, type: 3}
+  - {fileID: -360918359, guid: 58c66c98817cc394fb24649a81f4bee1, type: 3}
+  deviceCountTexts:
+  - {fileID: 1732651874}
+  - {fileID: 1575559518}
+  - {fileID: 253117614}
+  - {fileID: 357808974}
+  - {fileID: 81929633}
+  - {fileID: 458930350}
+  eraseButton: {fileID: 519458940}
+  clearButton: {fileID: 86684854}
+  selectedButtonSprite: {fileID: -1282254513, guid: 42d8285d22927b143a2583fa4f08258c, type: 3}
+  deviceCounts: 020000000000000004000000090000000100000002000000
+  devicePrefabs:
+  - {fileID: 1417629141}
+  - {fileID: 660849660}
+  - {fileID: 1227417061}
+  - {fileID: 418955319}
+  - {fileID: 420551244}
+  - {fileID: 146106240}
+  levelEditor: {fileID: 1857686233}
 --- !u!1 &1856302935
 GameObject:
   m_ObjectHideFlags: 0
@@ -16234,15 +16244,7 @@ MonoBehaviour:
   editorToggleButton: {fileID: 714658344}
   editorOnSprite: {fileID: -792093280, guid: 42d8285d22927b143a2583fa4f08258c, type: 3}
   editorOffSprite: {fileID: 660911614, guid: 42d8285d22927b143a2583fa4f08258c, type: 3}
-  devicePanel: {fileID: 684392679}
-  devicePrefabs:
-  - {fileID: 1417629141}
-  - {fileID: 660849660}
-  - {fileID: 1227417061}
-  - {fileID: 418955319}
-  - {fileID: 420551244}
-  - {fileID: 146106240}
-  deviceGhostPrefab: {fileID: 0}
+  gridSize: 1
 --- !u!1 &1860764257
 GameObject:
   m_ObjectHideFlags: 0

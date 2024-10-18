@@ -6,53 +6,37 @@ using UnityEngine.Tilemaps;
 
 public class LevelEditor : MonoBehaviour
 {
-    public RobotController robotController;  // Ссылка на RobotController
-    public Transform robot;                  // Ссылка на объект робота
-    public Vector3 startPosition;            // Начальная позиция для робота
-    public Button editorToggleButton;        // Кнопка для включения/выключения режима редактора
-    public Sprite editorOnSprite;            // Спрайт для кнопки в режиме редактора
-    public Sprite editorOffSprite;           // Спрайт для кнопки вне режима редактора
-    public DevicePanel devicePanel;          // Ссылка на панель устройств
-    public GameObject[] devicePrefabs;       // Массив префабов устройств для установки
-    public GameObject deviceGhostPrefab;     // Префаб для отображения силуэта устройства
+    public RobotController robotController;
+    public Transform robot;
+    public Vector3 startPosition;
+    public Button editorToggleButton;
+    public Sprite editorOnSprite;
+    public Sprite editorOffSprite;
 
-    private bool isEditorMode = true;        // Флаг режима редактора
-    private GameObject deviceGhost;          // Силуэт устройства
-    private int selectedDeviceIndex = -1;    // Индекс выбранного устройства
-    private SpriteRenderer ghostRenderer;    // SpriteRenderer для отображения силуэта
+    private bool isEditorMode = true;
+    private GameObject selectedDevicePrefab; // Префаб выбранного устройства
+    private int selectedDeviceIndex;         // Индекс выбранного устройства
+
+    // Параметры сетки
+    public float gridSize = 1.0f; // Размер клетки сетки
 
     void Start()
     {
+        Debug.Log("Entering Editor Mode at Start");
         EnterEditorMode();
         robot.position = startPosition;
-    }
-
-    void Update()
-    {
-        if (isEditorMode)
-        {
-            UpdateSelectedDevice();
-            if (selectedDeviceIndex >= 0)
-            {
-                FollowMouse();
-
-                // Проверка на установку устройства при нажатии правой кнопкой мыши
-                if (Input.GetMouseButtonDown(1))
-                {
-                    TryPlaceDevice();
-                }
-            }
-        }
     }
 
     public void ToggleEditorMode()
     {
         if (isEditorMode)
         {
+            Debug.Log("Exiting Editor Mode");
             ExitEditorMode();
         }
         else
         {
+            Debug.Log("Entering Editor Mode");
             EnterEditorMode();
         }
     }
@@ -60,7 +44,7 @@ public class LevelEditor : MonoBehaviour
     void EnterEditorMode()
     {
         isEditorMode = true;
-        Time.timeScale = 0f;
+        Time.timeScale = 0f; // Ставим игру на паузу
         robot.position = startPosition;
 
         robotController.ResetGravity();
@@ -74,70 +58,41 @@ public class LevelEditor : MonoBehaviour
     void ExitEditorMode()
     {
         isEditorMode = false;
-        Time.timeScale = 1f;
-
+        Time.timeScale = 1f; // Снимаем паузу
         editorToggleButton.image.sprite = editorOffSprite;
+    }
 
-        if (deviceGhost != null)
+    public void SetSelectedDevice(GameObject devicePrefab)
+    {
+        selectedDevicePrefab = devicePrefab;
+        Debug.Log("Selected device prefab set in LevelEditor: " + devicePrefab.name);
+    }
+
+    void Update()
+    {
+        // Проверка нажатия левой кнопки мыши в режиме редактирования
+        if (isEditorMode && selectedDevicePrefab != null && Input.GetMouseButtonDown(0))
         {
-            Destroy(deviceGhost);
+            PlaceDevice();
         }
     }
 
-    void UpdateSelectedDevice()
+    void PlaceDevice()
     {
-        int newDeviceIndex = devicePanel.GetSelectedDeviceIndex();
-        if (newDeviceIndex != selectedDeviceIndex)
-        {
-            selectedDeviceIndex = newDeviceIndex;
-            CreateGhostDevice();
-        }
-    }
+        // Получаем положение мыши в мировых координатах
+        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        // Отключаем z-координату
+        mousePosition.z = 0;
 
-    void CreateGhostDevice()
-    {
-        if (deviceGhost != null)
-        {
-            Destroy(deviceGhost);
-        }
+        // Привязываем к сетке
+        Vector3 gridPosition = new Vector3(
+            Mathf.Round(mousePosition.x / gridSize) * gridSize + (gridSize / 2),
+            Mathf.Round(mousePosition.y / gridSize) * gridSize + (gridSize / 2),
+            0
+        );
 
-        if (selectedDeviceIndex >= 0 && selectedDeviceIndex < devicePrefabs.Length)
-        {
-            deviceGhost = Instantiate(deviceGhostPrefab);
-            ghostRenderer = deviceGhost.GetComponent<SpriteRenderer>();
-            ghostRenderer.sprite = devicePrefabs[selectedDeviceIndex].GetComponent<SpriteRenderer>().sprite;
-        }
-    }
-
-    void FollowMouse()
-    {
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = 0;
-
-        // Привязка к сетке (размер ячейки 1x1, измените при необходимости)
-        Vector3 gridPos = new Vector3(Mathf.Round(mousePos.x), Mathf.Round(mousePos.y), 0);
-        deviceGhost.transform.position = gridPos;
-
-        // Проверка на возможность размещения
-        bool canPlace = CanPlaceDevice(gridPos);
-        ghostRenderer.color = canPlace ? Color.green : Color.red;
-    }
-
-    bool CanPlaceDevice(Vector3 position)
-    {
-        Collider2D hit = Physics2D.OverlapCircle(position, 0.4f);
-        if (hit != null) return false;
-
-        return true;
-    }
-
-    void TryPlaceDevice()
-    {
-        Vector3 placementPos = deviceGhost.transform.position;
-
-        if (CanPlaceDevice(placementPos))
-        {
-            Instantiate(devicePrefabs[selectedDeviceIndex], placementPos, Quaternion.identity);
-        }
+        // Создаем экземпляр префаба
+        Instantiate(selectedDevicePrefab, gridPosition, Quaternion.identity);
+        Debug.Log("Device placed at: " + gridPosition);
     }
 }
