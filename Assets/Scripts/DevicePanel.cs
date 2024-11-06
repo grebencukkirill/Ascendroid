@@ -3,38 +3,44 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.EventSystems;
 
 public class DevicePanel : MonoBehaviour
 {
     [Header("UI Elements")]
-    public Button[] deviceButtons;              // Массив кнопок для устройств (6 кнопок)
-    public Sprite[] deviceSprites;              // Массив спрайтов для устройств
-    public TextMeshProUGUI[] deviceCountTexts;  // Массив TextMeshPro для отображения количества устройств
+    public Button[] deviceButtons;
+    public Sprite[] deviceSprites;
+    public TextMeshProUGUI[] deviceCountTexts;
 
-    public Button eraseButton;                  // Кнопка ластика
-    public Button clearButton;                  // Кнопка очистки
-    public Sprite selectedButtonSprite;         // Спрайт для выделенной кнопки
+    public Button eraseButton;
+    public Button clearButton;
+    public Sprite selectedButtonSprite;
 
     [Header("Device Counts")]
-    public int[] deviceCounts;                  // Массив для хранения количества каждого устройства
+    public int[] deviceCounts;
 
     [Header("Device Prefabs")]
-    public GameObject[] devicePrefabs;          // Массив для хранения префабов устройств
-    public LevelEditor levelEditor;             // Ссылка на LevelEditor для передачи выбранного устройства
+    public GameObject[] devicePrefabs;
+    public LevelEditor levelEditor;
 
-    private Button selectedButton;              // Текущая выделенная кнопка
-    private Sprite[] originalButtonSprites;     // Массив для хранения оригинальных спрайтов кнопок
+    public Button selectedButton;
+    private Sprite[] originalButtonSprites;
 
-    private Color normalColor = new Color32(0x3A, 0x62, 0x73, 0xFF); // Обычный цвет
-    private Color selectedColor = new Color32(0x4C, 0x8D, 0xA8, 0xFF); // Цвет выделения
+    private Color normalColor = new Color32(0x3A, 0x62, 0x73, 0xFF);
+    private Color selectedColor = new Color32(0x4C, 0x8D, 0xA8, 0xFF);
+
+    [Header("Tooltip Elements")]
+    public GameObject tooltipObject;                  // Tooltip GameObject
+    public TextMeshProUGUI tooltipText;               // Text inside tooltip
+    public string[] deviceTooltips;                   // Array of tooltip descriptions for each device
 
     void Start()
     {
         originalButtonSprites = new Sprite[deviceButtons.Length];
         SetupDeviceButtons();
+        tooltipObject.SetActive(false); // Hide tooltip at start
     }
 
-    // Метод для настройки кнопок устройств в зависимости от количества
     void SetupDeviceButtons()
     {
         int activeButtonIndex = 0;
@@ -43,27 +49,45 @@ public class DevicePanel : MonoBehaviour
         {
             if (deviceCounts[i] > 0)
             {
-                deviceButtons[activeButtonIndex].gameObject.SetActive(true);
-                deviceButtons[activeButtonIndex].interactable = true;
+                int buttonIndex = activeButtonIndex;
+                int deviceIndex = i;
 
-                Transform iconTransform = deviceButtons[activeButtonIndex].transform.Find("UI_DeviceButton_Icon");
+                deviceButtons[buttonIndex].gameObject.SetActive(true);
+                deviceButtons[buttonIndex].interactable = true;
+
+                Transform iconTransform = deviceButtons[buttonIndex].transform.Find("UI_DeviceButton_Icon");
                 if (iconTransform != null)
                 {
                     Image iconImage = iconTransform.GetComponent<Image>();
                     if (iconImage != null)
                     {
-                        iconImage.sprite = deviceSprites[i];
-                        iconImage.enabled = true; // Включаем отображение иконки
-                        iconImage.color = normalColor; // Устанавливаем стандартный цвет
+                        iconImage.sprite = deviceSprites[deviceIndex];
+                        iconImage.enabled = true;
+                        iconImage.color = normalColor;
                     }
                 }
 
-                originalButtonSprites[activeButtonIndex] = deviceButtons[activeButtonIndex].image.sprite;
-                deviceCountTexts[activeButtonIndex].text = deviceCounts[i].ToString();
-                deviceCountTexts[activeButtonIndex].color = normalColor; // Устанавливаем стандартный цвет текста
+                originalButtonSprites[buttonIndex] = deviceButtons[buttonIndex].image.sprite;
+                deviceCountTexts[buttonIndex].text = deviceCounts[deviceIndex].ToString();
+                deviceCountTexts[buttonIndex].color = normalColor;
 
-                int index = i;
-                deviceButtons[activeButtonIndex].onClick.AddListener(() => OnDeviceButtonClicked(deviceButtons[activeButtonIndex], index));
+                deviceButtons[buttonIndex].onClick.AddListener(() => OnDeviceButtonClicked(deviceButtons[buttonIndex], deviceIndex));
+                
+                // Add tooltip listeners
+                EventTrigger trigger = deviceButtons[buttonIndex].gameObject.AddComponent<EventTrigger>();
+
+                // PointerEnter event
+                EventTrigger.Entry pointerEnter = new EventTrigger.Entry();
+                pointerEnter.eventID = EventTriggerType.PointerEnter;
+                pointerEnter.callback.AddListener((eventData) => ShowTooltip(deviceIndex, deviceButtons[buttonIndex]));
+                trigger.triggers.Add(pointerEnter);
+
+                // PointerExit event
+                EventTrigger.Entry pointerExit = new EventTrigger.Entry();
+                pointerExit.eventID = EventTriggerType.PointerExit;
+                pointerExit.callback.AddListener((eventData) => HideTooltip());
+                trigger.triggers.Add(pointerExit);
+
                 activeButtonIndex++;
             }
         }
@@ -89,12 +113,10 @@ public class DevicePanel : MonoBehaviour
         clearButton.onClick.AddListener(() => OnClearButtonClicked());
     }
 
-    // Обработчик нажатия на кнопку устройства
     void OnDeviceButtonClicked(Button button, int deviceIndex)
     {
         SelectButton(button);
 
-        // Передаем выбранный префаб в LevelEditor
         if (deviceIndex >= 0 && deviceIndex < devicePrefabs.Length && deviceCounts[deviceIndex] > 0)
         {
             levelEditor.SetSelectedDevice(devicePrefabs[deviceIndex]);
@@ -106,20 +128,17 @@ public class DevicePanel : MonoBehaviour
         }
     }
 
-    // Обработчик нажатия на кнопку ластика
     void OnEraseButtonClicked()
     {
         SelectButton(eraseButton);
         Debug.Log("Erase mode selected");
     }
 
-    // Обработчик нажатия на кнопку очистки
     void OnClearButtonClicked()
     {
         Debug.Log("Clear all devices");
     }
 
-    // Метод для выделения кнопки
     void SelectButton(Button button)
     {
         if (selectedButton != null)
@@ -133,10 +152,10 @@ public class DevicePanel : MonoBehaviour
                     Image prevIconImage = prevIconTransform.GetComponent<Image>();
                     if (prevIconImage != null)
                     {
-                        prevIconImage.color = normalColor; // Восстанавливаем цвет иконки
+                        prevIconImage.color = normalColor;
                     }
                 }
-                deviceCountTexts[prevIndex].color = normalColor; // Восстанавливаем цвет текста
+                deviceCountTexts[prevIndex].color = normalColor;
             }
         }
 
@@ -151,10 +170,29 @@ public class DevicePanel : MonoBehaviour
                 Image iconImage = iconTransform.GetComponent<Image>();
                 if (iconImage != null)
                 {
-                    iconImage.color = selectedColor; // Меняем цвет иконки на выделенный
+                    iconImage.color = selectedColor;
                 }
             }
-            deviceCountTexts[selectedIndex].color = selectedColor; // Меняем цвет текста на выделенный
+            deviceCountTexts[selectedIndex].color = selectedColor;
         }
+    }
+
+    // Tooltip display methods
+    public void ShowTooltip(int deviceIndex, Button button)
+    {
+        if (deviceIndex >= 0 && deviceIndex < deviceTooltips.Length)
+        {
+            tooltipText.text = deviceTooltips[deviceIndex];
+            tooltipObject.SetActive(true);
+
+            // Update tooltip position based on the button's screen position
+            Vector3 buttonPosition = button.transform.position;
+            tooltipObject.transform.position = new Vector3(buttonPosition.x, buttonPosition.y + 180, buttonPosition.z);
+        }
+    }
+
+    public void HideTooltip()
+    {
+        tooltipObject.SetActive(false);
     }
 }
