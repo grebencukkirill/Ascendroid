@@ -13577,6 +13577,7 @@ MonoBehaviour:
   clearButton: {fileID: 86684854}
   selectedButtonSprite: {fileID: 0}
   deviceCounts: 010000000000000003000000050000000600000000000000
+  deviceTags: []
   devicePrefabs:
   - {fileID: 1417629141}
   - {fileID: 146106240}
@@ -13718,6 +13719,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1a8ef26d46e96846a79cc63e8124f2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  devicePanel: {fileID: 1850585009}
   robotController: {fileID: 1897037403}
   robot: {fileID: 1897037401}
   startPosition: {x: -6.5, y: -2.5, z: 0}

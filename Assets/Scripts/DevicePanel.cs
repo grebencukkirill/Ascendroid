@@ -19,6 +19,8 @@ public class DevicePanel : MonoBehaviour
     [Header("Device Counts")]
     public int[] deviceCounts;
 
+    public string[] deviceTags;
+
     [Header("Device Prefabs")]
     public GameObject[] devicePrefabs;
     public LevelEditor levelEditor;
@@ -164,6 +166,26 @@ public class DevicePanel : MonoBehaviour
         };
         clearExit.callback.AddListener((eventData) => HideTooltip());
         clearTrigger.triggers.Add(clearExit);
+    }
+
+    public void UpdateDeviceCount(int deviceIndex, int delta)
+    {
+        if (deviceIndex >= 0 && deviceIndex < deviceCounts.Length)
+        {
+            deviceCounts[deviceIndex] += delta;
+
+            // Обновляем текстовое представление количества
+            if (deviceCounts[deviceIndex] > 0)
+            {
+                deviceCountTexts[deviceIndex].text = deviceCounts[deviceIndex].ToString();
+                deviceButtons[deviceIndex].interactable = true;
+            }
+            else
+            {
+                deviceCountTexts[deviceIndex].text = "0";
+                deviceButtons[deviceIndex].interactable = false; // Отключаем кнопку, если устройств больше нет
+            }
+        }
     }
 
 

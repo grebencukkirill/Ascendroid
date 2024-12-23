@@ -6,6 +6,8 @@ using UnityEngine.Tilemaps;
 
 public class LevelEditor : MonoBehaviour
 {
+    public DevicePanel devicePanel;
+
     private string[] deviceTags = { "Jump", "Springboard", "ReverseZone", "GravChange", "SpeedUp", "SlowDown" };
 
     public RobotController robotController;
@@ -29,6 +31,7 @@ public class LevelEditor : MonoBehaviour
 
     void Start()
     {
+        devicePanel.deviceTags = deviceTags;
         EnterEditorMode();
         robot.position = startPosition;
     }
@@ -249,9 +252,23 @@ public class LevelEditor : MonoBehaviour
     void PlaceDevice()
     {
         Vector3 devicePosition = deviceSilhouette.transform.position;
-        GameObject placedDevice = Instantiate(selectedDevicePrefab, devicePosition, Quaternion.identity);
-        placedDevice.transform.localScale = deviceSilhouette.transform.localScale;
-        Debug.Log("Device placed at: " + devicePosition);
+
+        // Установить устройство, только если есть доступные экземпляры
+        int deviceIndex = System.Array.IndexOf(devicePanel.devicePrefabs, selectedDevicePrefab);
+        if (deviceIndex >= 0 && devicePanel.deviceCounts[deviceIndex] > 0)
+        {
+            GameObject placedDevice = Instantiate(selectedDevicePrefab, devicePosition, Quaternion.identity);
+            placedDevice.transform.localScale = deviceSilhouette.transform.localScale;
+
+            // Уменьшаем количество доступных устройств
+            devicePanel.UpdateDeviceCount(deviceIndex, -1);
+
+            Debug.Log("Device placed at: " + devicePosition);
+        }
+        else
+        {
+            Debug.LogWarning("No devices left to place.");
+        }
     }
 
     void SetSilhouetteColor(Color color)
@@ -315,28 +332,33 @@ public class LevelEditor : MonoBehaviour
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePosition.z = 0;
 
-        // Вычисляем центр текущей ячейки сетки
         Vector3 gridPosition = new Vector3(
             Mathf.Floor(mousePosition.x / gridSize) * gridSize + (gridSize / 2),
             Mathf.Floor(mousePosition.y / gridSize) * gridSize + (gridSize / 2),
             0
         );
 
-        // Определяем размер ячейки
-        Vector2 cellSize = new Vector2(gridSize - 0.1f, gridSize - 0.1f); // Немного меньше сетки для точности
+        Vector2 cellSize = new Vector2(gridSize - 0.1f, gridSize - 0.1f);
 
-        // Проверяем наличие объектов в ячейке
         Collider2D[] colliders = Physics2D.OverlapBoxAll(gridPosition, cellSize, 0f);
         foreach (var col in colliders)
         {
-            if (IsDeviceTag(col.tag)) // Проверяем, относится ли объект к устройствам
+            if (IsDeviceTag(col.tag))
             {
+                // Увеличиваем количество устройств
+                int deviceIndex = System.Array.IndexOf(devicePanel.deviceTags, col.tag);
+                if (deviceIndex >= 0)
+                {
+                    devicePanel.UpdateDeviceCount(deviceIndex, 1);
+                }
+
                 Destroy(col.gameObject);
                 Debug.Log($"Device with tag {col.tag} erased at grid cell: {gridPosition}");
-                break; // Удаляем только один объект за раз
+                break;
             }
         }
     }
+
 
     bool IsDeviceTag(string tag)
     {
