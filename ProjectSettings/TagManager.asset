@@ -5,16 +5,18 @@ TagManager:
   serializedVersion: 2
   tags:
   - Robot
-  - ReverseZone
-  - Magnet
-  - Jump
-  - GravChange
-  - SpeedUp
-  - SlowDown
   - Door
   - Damage
-  - Springboard
   - Ground
+  - LiftPad
+  - Redirect
+  - GravFlip
+  - AccelPad
+  - SlowPad
+  - DashPad
+  - Magnet
+  - EnergyCapsule
+  - LevelEnd
   layers:
   - Default
   - TransparentFX

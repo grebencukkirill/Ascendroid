@@ -7,8 +7,11 @@ using UnityEngine.Tilemaps;
 public class LevelEditor : MonoBehaviour
 {
     public DevicePanel devicePanel;
+    public AudioManager audioManager;
 
-    private string[] deviceTags = { "Jump", "Springboard", "ReverseZone", "GravChange", "SpeedUp", "SlowDown" };
+    public Animator devicePanelAnimator;
+
+    private string[] deviceTags = { "LiftPad", "DashPad", "Redirect", "GravFlip", "AccelPad", "SlowPad" };
 
     public RobotController robotController;
     public Transform robot;
@@ -16,6 +19,8 @@ public class LevelEditor : MonoBehaviour
     public Button editorToggleButton;
     public Sprite editorOnSprite;
     public Sprite editorOffSprite;
+
+    private bool isSwitchingMode = false;
 
     private bool isEditorMode = true;
     private GameObject selectedDevicePrefab;
@@ -32,50 +37,84 @@ public class LevelEditor : MonoBehaviour
     void Start()
     {
         devicePanel.deviceTags = deviceTags;
-        EnterEditorMode();
-        robot.position = startPosition;
+
+        audioManager.OnPlayModeReady += OnPlayModeStart;
+        audioManager.OnEditModeReady += OnEditModeStart;
+
+        EnterEditorMode(); // стартуем в редакторском режиме
     }
 
     public void ToggleEditorMode()
     {
+        if (isSwitchingMode) return;
+        isSwitchingMode = true;
+
         if (isEditorMode)
         {
-            ExitEditorMode();
+            devicePanelAnimator.SetBool("isVisible", false);
+            audioManager.RequestPlayMode();
         }
         else
         {
-            EnterEditorMode();
+            devicePanelAnimator.SetBool("isVisible", true);
+            audioManager.RequestEditMode();
         }
+    }
+
+    void OnPlayModeStart()
+    {
+        ExitEditorMode();
+        isSwitchingMode = false;
+    }
+
+    void OnEditModeStart()
+    {
+        EnterEditorMode();
+        isSwitchingMode = false;
     }
 
     void EnterEditorMode()
     {
         isEditorMode = true;
         Time.timeScale = 0f;
-        robot.position = startPosition;
 
+        robot.position = startPosition;
         robotController.ResetGravity();
         robotController.ResetDirection();
         robotController.ResetPhysicsState();
         robotController.PlayAnimation("Walk");
 
+        EnergyCapsuleManager.Instance?.ResetCapsules();
+        DevicesAccelSlowPads.ForceStopAllSounds();
+
         editorToggleButton.image.sprite = editorOnSprite;
+        devicePanelAnimator.SetBool("isVisible", true);
+
+        foreach (LaserController laser in FindObjectsOfType<LaserController>())
+        {
+            laser.StopLaser();
+        }
     }
 
     void ExitEditorMode()
     {
         isEditorMode = false;
         Time.timeScale = 1f;
+
+        if (deviceSilhouette != null) Destroy(deviceSilhouette);
+        if (eraserSilhouette != null) Destroy(eraserSilhouette);
+
         editorToggleButton.image.sprite = editorOffSprite;
 
-        if (deviceSilhouette != null)
+        foreach (LaserController laser in FindObjectsOfType<LaserController>())
         {
-            Destroy(deviceSilhouette);
+            laser.StartLaser();
         }
     }
 
     public void SetSelectedDevice(GameObject devicePrefab)
     {
+
         selectedDevicePrefab = devicePrefab;
         CreateDeviceSilhouette();
     }
@@ -157,7 +196,7 @@ public class LevelEditor : MonoBehaviour
         }
 
         // Проверка для Jump, GravChange и Springboard: наличие Ground сверху или снизу
-        if (selectedDevicePrefab.name == "Jump" || selectedDevicePrefab.name == "GravChange" || selectedDevicePrefab.name == "Springboard")
+        if (selectedDevicePrefab.name == "LiftPad" || selectedDevicePrefab.name == "GravFlip" || selectedDevicePrefab.name == "DashPad")
         {
             bool hasGroundBelow = false;
             bool hasGroundAbove = false;
@@ -189,21 +228,7 @@ public class LevelEditor : MonoBehaviour
             // Разрешить размещение только если есть Ground снизу или сверху
             if (!hasGroundBelow && !hasGroundAbove) return false;
 
-            // Определение ориентации устройства
-            if (hasGroundBelow && !hasGroundAbove)
-            {
-                deviceSilhouette.transform.localScale = new Vector3(1, 1, 1); // Обычное положение
-            }
-            else if (!hasGroundBelow && hasGroundAbove)
-            {
-                deviceSilhouette.transform.localScale = new Vector3(1, -1, 1); // Перевернутое положение
-            }
-            else if (hasGroundBelow && hasGroundAbove)
-            {
-                // Если есть Ground и снизу, и сверху, выбираем ориентацию по положению курсора
-                float mouseY = Camera.main.ScreenToWorldPoint(Input.mousePosition).y;
-                deviceSilhouette.transform.localScale = new Vector3(1, mouseY < targetPosition.y ? -1 : 1, 1);
-            }
+            
         }
 
         return true; // Если все условия выполнены, разрешаем установку устройства
@@ -216,22 +241,35 @@ public class LevelEditor : MonoBehaviour
     void AdjustSilhouetteRotation()
     {
         Vector2 checkPosition = deviceSilhouette.transform.position;
-        Collider2D[] colliders = Physics2D.OverlapBoxAll(checkPosition, new Vector2(gridSize, gridSize), 0f);
+        Vector2 cellSize = new Vector2(gridSize - 0.1f, gridSize - 0.1f); // Немного меньше, чтобы избежать ложных срабатываний
 
+        // Проверка на Ground снизу
+        Vector2 belowPosition = checkPosition + Vector2.down * gridSize;
+        Collider2D[] collidersBelow = Physics2D.OverlapBoxAll(belowPosition, cellSize, 0f);
         bool hasGroundBelow = false;
-        bool hasGroundAbove = false;
-
-        foreach (var col in colliders)
+        foreach (var col in collidersBelow)
         {
             if (col.tag == "Ground")
             {
-                float colCenterY = col.bounds.center.y;
-                hasGroundBelow |= colCenterY < checkPosition.y;
-                hasGroundAbove |= colCenterY > checkPosition.y;
+                hasGroundBelow = true;
+                break;
             }
         }
 
-        if (selectedDevicePrefab.name == "Jump" || selectedDevicePrefab.name == "GravChange" || selectedDevicePrefab.name == "Springboard")
+        // Проверка на Ground сверху
+        Vector2 abovePosition = checkPosition + Vector2.up * gridSize;
+        Collider2D[] collidersAbove = Physics2D.OverlapBoxAll(abovePosition, cellSize, 0f);
+        bool hasGroundAbove = false;
+        foreach (var col in collidersAbove)
+        {
+            if (col.tag == "Ground")
+            {
+                hasGroundAbove = true;
+                break;
+            }
+        }
+
+        if (selectedDevicePrefab.name == "LiftPad" || selectedDevicePrefab.name == "GravFlip" || selectedDevicePrefab.name == "DashPad")
         {
             if (hasGroundBelow && !hasGroundAbove)
             {
@@ -244,7 +282,7 @@ public class LevelEditor : MonoBehaviour
             else if (hasGroundBelow && hasGroundAbove)
             {
                 float mouseY = Camera.main.ScreenToWorldPoint(Input.mousePosition).y;
-                deviceSilhouette.transform.localScale = new Vector3(1, mouseY < checkPosition.y ? -1 : 1, 1);
+                deviceSilhouette.transform.localScale = new Vector3(1, mouseY < checkPosition.y ? 1 : -1, 1);
             }
         }
     }
@@ -264,6 +302,13 @@ public class LevelEditor : MonoBehaviour
             devicePanel.UpdateDeviceCount(deviceIndex, -1);
 
             Debug.Log("Device placed at: " + devicePosition);
+
+            if (devicePanel.deviceCounts[deviceIndex] <= 0)
+            {
+                Destroy(deviceSilhouette);
+                deviceSilhouette = null;
+                selectedDevicePrefab = null;
+            }
         }
         else
         {
@@ -371,15 +416,16 @@ public class LevelEditor : MonoBehaviour
 
     public void ClearAllDevices()
     {
-        foreach (string deviceTag in deviceTags)
+        for (int i = 0; i < deviceTags.Length; i++)
         {
-            GameObject[] devices = GameObject.FindGameObjectsWithTag(deviceTag);
+            GameObject[] devices = GameObject.FindGameObjectsWithTag(deviceTags[i]);
             foreach (var device in devices)
             {
                 Destroy(device);
             }
         }
-        Debug.Log("All devices cleared.");
+
+        Debug.Log("All devices cleared and counts reset.");
     }
 
 }

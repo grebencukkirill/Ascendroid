@@ -8,7 +8,7 @@ public class FPSLimiter : MonoBehaviour
 
     void Start()
     {
-        // Установка целевой частоты кадров
-        Application.targetFrameRate = targetFPS;
+        int savedFPS = PlayerPrefs.GetInt("Framerate", 60);
+        Application.targetFrameRate = savedFPS;
     }
 }

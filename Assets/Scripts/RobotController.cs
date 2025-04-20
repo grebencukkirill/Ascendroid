@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+
 
 public class RobotController : MonoBehaviour
 {
@@ -19,7 +22,12 @@ public class RobotController : MonoBehaviour
     private bool isReversed = false;
     private bool isReversing = false;
     private bool hasJumped = false; // Флаг для отслеживания прыжка
+    private bool isDead = false;
     private float currentSpeed;
+
+    public AudioSource deathAudioSource;
+    public AudioManager audioManager;
+    public LevelEditor levelEditor;
 
     private void Start()
     {
@@ -32,7 +40,6 @@ public class RobotController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Debug.Log(rb.velocity);
         if (isGrounded && !isReversing)
         {
             if (hasJumped && Mathf.Abs(rb.velocity.y) < 0.1f) // Проверяем, действительно ли робот приземлился
@@ -86,33 +93,36 @@ public class RobotController : MonoBehaviour
     {
         switch (other.tag)
         {
-            case "Jump":
+            case "LiftPad":
                 PerformJump(jumpForce, forwardJumpForce / 12f);
                 break;
-            case "Springboard":
+            case "DashPad":
                 PerformJump(jumpForce / 1.64f, forwardJumpForce / 3.5f);
                 break;
-            case "ReverseZone":
+            case "Redirect":
                 StartCoroutine(ReverseDirection());
                 break;
-            case "GravChange":
+            case "GravFlip":
                 ChangeGravity();
                 break;
-            case "SpeedUp":
+            case "AccelPad":
                 AdjustSpeed(speedUpMultiplier, speedUpMultiplier / 2f);
                 break;
-            case "SlowDown":
+            case "SlowPad":
                 AdjustSpeed(slowDownMultiplier, slowDownMultiplier);
                 break;
             case "Damage":
                 Damage();
+                break;
+            case "LevelEnd":
+                HandleLevelEnd();
                 break;
         }
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("SpeedUp") || other.CompareTag("SlowDown"))
+        if (other.CompareTag("AccelPad") || other.CompareTag("SlowPad"))
         {
             ResetSpeed();
         }
@@ -159,8 +169,20 @@ public class RobotController : MonoBehaviour
         }
         else if (!isGrounded)
         {
-            Vector2 speedDirection = new Vector2(isReversed ? -horizontalMultiplier : horizontalMultiplier, (isGravChanged ? -verticalMultiplier : verticalMultiplier));
-            rb.AddForce(speedDirection, ForceMode2D.Impulse);
+            // При ускорении в воздухе добавляем силу
+            if (horizontalMultiplier > 1f)
+            {
+                Vector2 speedDirection = new Vector2(isReversed ? -horizontalMultiplier : horizontalMultiplier,
+                                                     (isGravChanged ? -verticalMultiplier : verticalMultiplier));
+                rb.AddForce(speedDirection, ForceMode2D.Impulse);
+            }
+            // При замедлении — прямо изменяем скорость
+            else
+            {
+                Vector2 newVelocity = rb.velocity;
+                newVelocity.x *= horizontalMultiplier;
+                rb.velocity = newVelocity;
+            }
         }
     }
 
@@ -171,8 +193,28 @@ public class RobotController : MonoBehaviour
 
     public void Damage()
     {
+        if (isDead) return;
 
+        isDead = true;
+        Time.timeScale = 0f;
+
+        deathAudioSource.Play();
+        StartCoroutine(HandleDeathTransition());
     }
+
+    private IEnumerator HandleDeathTransition()
+    {
+        float duration = deathAudioSource.clip.length;
+        yield return new WaitForSecondsRealtime(duration);
+
+        Time.timeScale = 1f;
+
+        if (audioManager != null)
+            audioManager.RequestEditMode(force: true);
+
+        isDead = false;
+    }
+
 
     public void ResetGravity()
     {
@@ -201,6 +243,48 @@ public class RobotController : MonoBehaviour
     {
         animator.Play(isReversed ? $"Robot_Reversed_{animationName}" : $"Robot_{animationName}");
     }
-     
+
+    void HandleLevelEnd()
+    {
+        string levelName = SceneManager.GetActiveScene().name;
+        int capsuleCount = EnergyCapsuleManager.Instance.GetCollectedCount();
+
+        FindObjectOfType<LevelEndUI>().ShowEndScreen(capsuleCount);
+        SaveProgress(levelName, capsuleCount);
+
+        Time.timeScale = 0f;
+    }
+
+    private void SaveProgress(string levelName, int capsules)
+    {
+        string capsuleKey = $"{levelName}_capsules";
+        string completedKey = $"{levelName}_completed";
+
+        // сохраняем максимум капсул
+        int prevBest = PlayerPrefs.GetInt(capsuleKey, 0);
+        if (capsules > prevBest)
+            PlayerPrefs.SetInt(capsuleKey, capsules);
+
+        PlayerPrefs.SetInt(completedKey, 1);
+
+        // Разблокируем следующий уровень — только если он есть
+        int currentIndex = SceneManager.GetActiveScene().buildIndex;
+        int nextIndex = currentIndex + 1;
+
+        if (nextIndex < SceneManager.sceneCountInBuildSettings)
+        {
+            string nextSceneName = GetSceneNameByBuildIndex(nextIndex);
+            PlayerPrefs.SetInt($"{nextSceneName}_unlocked", 1);
+        }
+
+        PlayerPrefs.Save();
+    }
+
+    private string GetSceneNameByBuildIndex(int index)
+    {
+        string path = SceneUtility.GetScenePathByBuildIndex(index);
+        string name = System.IO.Path.GetFileNameWithoutExtension(path);
+        return name;
+    }
 }
 

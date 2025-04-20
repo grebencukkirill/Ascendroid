@@ -97,7 +97,70 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: DeviceIcons_0
+      name: UI_DeviceIcons_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 100
+        width: 50
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 497012a1ed3757c4e8500e8e252ff8a3
+      internalID: 1296061502
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_DeviceIcons_1
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 100
+        width: 50
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 644d27b5f17f1fc44a7fad99de23550c
+      internalID: 1126163784
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_DeviceIcons_2
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 100
+        width: 50
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 644009c4292dc7444bf994ccfee75a33
+      internalID: 983682583
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_DeviceIcons_3
       rect:
         serializedVersion: 2
         x: 0
@@ -111,14 +174,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 18a75d863287b37409444285f215ffe9
-      internalID: -776452831
+      spriteID: 09a540f45ee884d4a88fef93e34d7348
+      internalID: 394487361
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: DeviceIcons_1
+      name: UI_DeviceIcons_4
       rect:
         serializedVersion: 2
         x: 50
@@ -132,14 +195,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2402a5cda2a6eb04899e71ea4177b4d3
-      internalID: 1348045084
+      spriteID: 97f1957c71dc6ee42a0c31df895cb1c9
+      internalID: -2068249072
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: DeviceIcons_2
+      name: UI_DeviceIcons_5
       rect:
         serializedVersion: 2
         x: 100
@@ -153,14 +216,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b8aabe91de393a34e9310afb37c5e12f
-      internalID: 1148821863
+      spriteID: 0c7a32003e7ccee4d8427db15641293b
+      internalID: 1355934247
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: DeviceIcons_3
+      name: UI_DeviceIcons_6
       rect:
         serializedVersion: 2
         x: 0
@@ -174,14 +237,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f18a782a729b7e24c93e4ceb150ae348
-      internalID: -1192764279
+      spriteID: 19b6b3a3203581f4fbca3d97b2a37d4a
+      internalID: 23840343
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: DeviceIcons_4
+      name: UI_DeviceIcons_7
       rect:
         serializedVersion: 2
         x: 50
@@ -195,14 +258,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0d09733595069724c84aeb76ae417bc4
-      internalID: 1930603919
+      spriteID: 2ac81cd288c43cd41b4bfbb02fb9a623
+      internalID: 1126295309
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: DeviceIcons_5
+      name: UI_DeviceIcons_8
       rect:
         serializedVersion: 2
         x: 100
@@ -216,8 +279,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0aa3567563b9da34db8057e9e6533e4a
-      internalID: -360918359
+      spriteID: e73780bda5be19542bffe5dd18a7c00a
+      internalID: 1499348263
       vertices: []
       indices: 
       edges: []
@@ -233,12 +296,15 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      DeviceIcons_0: -776452831
-      DeviceIcons_1: 1348045084
-      DeviceIcons_2: 1148821863
-      DeviceIcons_3: -1192764279
-      DeviceIcons_4: 1930603919
-      DeviceIcons_5: -360918359
+      UI_DeviceIcons_0: 1296061502
+      UI_DeviceIcons_1: 1126163784
+      UI_DeviceIcons_2: 983682583
+      UI_DeviceIcons_3: 394487361
+      UI_DeviceIcons_4: -2068249072
+      UI_DeviceIcons_5: 1355934247
+      UI_DeviceIcons_6: 23840343
+      UI_DeviceIcons_7: 1126295309
+      UI_DeviceIcons_8: 1499348263
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
