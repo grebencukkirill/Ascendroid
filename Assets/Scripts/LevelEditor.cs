@@ -36,6 +36,12 @@ public class LevelEditor : MonoBehaviour
 
     void Start()
     {
+        startPosition = robot.position;
+        if (Physics2D.gravity.y > 0)
+        {
+            Physics2D.gravity = new Vector2(Physics2D.gravity.x, -Physics2D.gravity.y);
+        }
+
         devicePanel.deviceTags = deviceTags;
 
         audioManager.OnPlayModeReady += OnPlayModeStart;

@@ -9,7 +9,7 @@ public class LevelEndUI : MonoBehaviour
 {
     public GameObject panel;
     public Image[] capsuleImages; // 3 изображения для капсул
-    public Animator[] capsuleAnimators; // можно навешать анимации на капсулы
+    public Animator[] capsuleAnimators;
 
     public float delayBetweenCapsules = 0.5f;
 
@@ -47,14 +47,21 @@ public class LevelEndUI : MonoBehaviour
 
     public void RetryLevel()
     {
-        Time.timeScale = 1f; // если игра на паузе
-        SceneManager.LoadScene(currentSceneName);
+        panel.SetActive(false); // скрываем панель окончания
+        Time.timeScale = 1f;
+
+        AudioManager audio = FindObjectOfType<AudioManager>();
+        if (audio != null)
+            audio.RequestEditMode();
     }
 
     public void GoToLevelSelect()
     {
         Time.timeScale = 1f;
-        MenuMusicManager.Instance.PlayMusic();
+        if (MenuMusicManager.Instance != null)
+        {
+            MenuMusicManager.Instance.PlayMusic();
+        }
         SceneManager.LoadScene("LevelSelect");
     }
 
@@ -71,8 +78,11 @@ public class LevelEndUI : MonoBehaviour
         }
         else
         {
-            // если уровней больше нет — можно, например, вернуться в меню
             SceneManager.LoadScene("LevelSelect");
+            if (MenuMusicManager.Instance != null)
+            {
+                MenuMusicManager.Instance.PlayMusic();
+            }
         }
     }
 }

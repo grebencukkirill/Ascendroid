@@ -34,12 +34,20 @@ public class SettingsPanelUI : MonoBehaviour
     private int currentLanguageIndex = 0;
 
     private readonly string[] screenModes = { "Fullscreen", "Windowed", "Borderless" };
-    private readonly int[] framerates = { 30, 60, 120, 144 };
+    private readonly int[] framerates = { 30, 60, 75, 120, 144 };
     private readonly string[] languages = { "EN", "RU" };
 
     void Start()
     {
-        resolutions = Screen.resolutions;
+        resolutions = new Resolution[]
+        {
+            new Resolution { width = 1280, height = 720 },
+            new Resolution { width = 1366, height = 768 },
+            new Resolution { width = 1600, height = 900 },
+            new Resolution { width = 1920, height = 1080 },
+            new Resolution { width = 2560, height = 1440 },
+            new Resolution { width = 3840, height = 2160 },
+        };
         LoadSettings();
         UpdateAllTexts();
     }
@@ -131,13 +139,26 @@ public class SettingsPanelUI : MonoBehaviour
 
         int width = PlayerPrefs.GetInt("ResolutionWidth", Screen.currentResolution.width);
         int height = PlayerPrefs.GetInt("ResolutionHeight", Screen.currentResolution.height);
+
+        bool found = false;
         for (int i = 0; i < resolutions.Length; i++)
         {
             if (resolutions[i].width == width && resolutions[i].height == height)
             {
                 currentResolutionIndex = i;
+                found = true;
                 break;
             }
+        }
+
+        if (!found)
+        {
+            // ƒобавл€ем текущее разрешение в список
+            var resList = new List<Resolution>(resolutions);
+            Resolution currentRes = new Resolution { width = width, height = height };
+            resList.Insert(0, currentRes);
+            resolutions = resList.ToArray();
+            currentResolutionIndex = 0;
         }
 
         currentScreenModeIndex = PlayerPrefs.GetInt("ScreenMode", 0);

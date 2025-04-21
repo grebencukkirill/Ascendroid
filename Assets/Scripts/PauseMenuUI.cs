@@ -70,6 +70,10 @@ public class PauseMenuUI : MonoBehaviour
     public void OnConfirmLevelSelect()
     {
         Time.timeScale = 1f;
+        if (MenuMusicManager.Instance != null)
+        {
+            MenuMusicManager.Instance.PlayMusic();
+        }
         SceneManager.LoadScene("LevelSelect");
     }
 
