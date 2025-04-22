@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 public class LevelEndUI : MonoBehaviour
 {
     public GameObject panel;
-    public Image[] capsuleImages; // 3 изображения для капсул
+    public Image[] capsuleImages;
     public Animator[] capsuleAnimators;
 
     public float delayBetweenCapsules = 0.5f;
@@ -47,12 +47,12 @@ public class LevelEndUI : MonoBehaviour
 
     public void RetryLevel()
     {
-        panel.SetActive(false); // скрываем панель окончания
+        panel.SetActive(false);
         Time.timeScale = 1f;
 
         AudioManager audio = FindObjectOfType<AudioManager>();
         if (audio != null)
-            audio.RequestEditMode();
+            audio.RequestEditMode(force: true);
     }
 
     public void GoToLevelSelect()

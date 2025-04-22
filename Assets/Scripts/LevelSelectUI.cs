@@ -44,17 +44,14 @@ public class LevelSelectUI : MonoBehaviour
             GameObject buttonObj = Instantiate(levelButtonPrefab, contentParent);
             Button button = buttonObj.GetComponent<Button>();
 
-            // Вытаскиваем номер уровня из имени сцены (например, Level_3 -> 3)
             string levelNumber = System.Text.RegularExpressions.Regex.Match(sceneName, @"\d+$").Value;
 
-            // Создаём локализованный текст (например, "Level 3" или "Уровень 3")
             localizedPrefix.GetLocalizedStringAsync().Completed += handle =>
             {
                 string prefix = handle.Result;
                 buttonObj.GetComponentInChildren<TMP_Text>().text = $"{prefix} {levelNumber}";
             };
 
-            // Капсулы
             int collected = PlayerPrefs.GetInt($"{sceneName}_capsules", 0);
             for (int j = 0; j < 3; j++)
             {

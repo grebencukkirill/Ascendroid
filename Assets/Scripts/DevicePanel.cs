@@ -38,8 +38,8 @@ public class DevicePanel : MonoBehaviour
     public TextMeshProUGUI tooltipText;
     public LocalizedString[] deviceTooltips;
 
-    private Dictionary<int, int> deviceIndexToButtonIndex = new Dictionary<int, int>(); // deviceIndex => buttonIndex
-    private Dictionary<int, int> buttonIndexToDeviceIndex = new Dictionary<int, int>(); // buttonIndex => deviceIndex
+    private Dictionary<int, int> deviceIndexToButtonIndex = new Dictionary<int, int>();
+    private Dictionary<int, int> buttonIndexToDeviceIndex = new Dictionary<int, int>();
 
     private int[] initialDeviceCounts;
 
@@ -56,7 +56,7 @@ public class DevicePanel : MonoBehaviour
         originalButtonSprites = new Sprite[deviceButtons.Length];
         SetupDeviceButtons();
         SetupEraseAndClearTooltips();
-        tooltipObject.SetActive(false); // Hide tooltip at start
+        tooltipObject.SetActive(false);
     }
 
     void SetupDeviceButtons()
@@ -79,7 +79,6 @@ public class DevicePanel : MonoBehaviour
                 deviceButtons[buttonIndex].gameObject.SetActive(true);
                 deviceButtons[buttonIndex].interactable = true;
 
-                // Применяем спрайт и цвета
                 Transform iconTransform = deviceButtons[buttonIndex].transform.Find("UI_DeviceButton_Icon");
                 if (iconTransform != null)
                 {
@@ -96,10 +95,8 @@ public class DevicePanel : MonoBehaviour
                 deviceCountTexts[buttonIndex].text = deviceCounts[deviceIndex].ToString();
                 deviceCountTexts[buttonIndex].color = normalColor;
 
-                // Клик
                 deviceButtons[buttonIndex].onClick.AddListener(() => OnDeviceButtonClicked(deviceButtons[buttonIndex], deviceIndex));
 
-                // Tooltip
                 EventTrigger trigger = deviceButtons[buttonIndex].gameObject.AddComponent<EventTrigger>();
 
                 EventTrigger.Entry pointerEnter = new EventTrigger.Entry
@@ -120,7 +117,6 @@ public class DevicePanel : MonoBehaviour
             }
         }
 
-        // Отключаем оставшиеся кнопки
         for (int j = activeButtonIndex; j < deviceButtons.Length; j++)
         {
 
@@ -135,7 +131,6 @@ public class DevicePanel : MonoBehaviour
     {
         if (deviceTooltips.Length < 2)
         {
-            Debug.LogError("Device tooltips array must have at least two elements for erase and clear buttons.");
             return;
         }
 
@@ -178,19 +173,15 @@ public class DevicePanel : MonoBehaviour
                 }
                 else
                 {
-                    // Если стало 0, надо пересобрать UI
                     SetupDeviceButtons();
                 }
             }
             else if (deviceCounts[deviceIndex] > 0)
             {
-                // Устройство стало активным — обновляем UI
                 SetupDeviceButtons();
             }
         }
     }
-
-
 
 
     void OnDeviceButtonClicked(Button button, int deviceIndex)
@@ -201,11 +192,6 @@ public class DevicePanel : MonoBehaviour
         if (deviceIndex >= 0 && deviceIndex < devicePrefabs.Length && deviceCounts[deviceIndex] > 0)
         {
             levelEditor.SetSelectedDevice(devicePrefabs[deviceIndex]);
-            Debug.Log("Selected device index: " + deviceIndex);
-        }
-        else
-        {
-            Debug.LogWarning("Device index out of bounds or no devices left.");
         }
     }
 
@@ -213,7 +199,6 @@ public class DevicePanel : MonoBehaviour
     {
         SelectButton(eraseButton);
         levelEditor.SetEraseMode(true);
-        Debug.Log("Erase mode selected");
     }
 
     void OnClearButtonClicked()
@@ -268,7 +253,6 @@ public class DevicePanel : MonoBehaviour
     }
 
 
-    // Tooltip display methods
     public void ShowTooltip(int deviceIndex, Button button)
     {
         if (deviceIndex >= 0 && deviceIndex < deviceTooltips.Length)

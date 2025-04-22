@@ -11,32 +11,27 @@ public class TutorialManager : MonoBehaviour
 
     void Start()
     {
-        // Деактивируем все шаги, кроме первого
         for (int i = 0; i < tutorialSteps.Length; i++)
         {
             tutorialSteps[i].SetActive(i == 0);
         }
     }
 
-    // Вызывается кнопкой "Далее"
     public void NextStep()
     {
         if (tutorialSteps.Length == 0)
             return;
 
-        // Деактивируем текущее окно
         tutorialSteps[currentStepIndex].SetActive(false);
 
         currentStepIndex++;
 
-        // Если это не последний шаг — активируем следующий
         if (currentStepIndex < tutorialSteps.Length)
         {
             tutorialSteps[currentStepIndex].SetActive(true);
         }
         else
         {
-            // Все шаги пройдены — отключаем панель туториала
             gameObject.SetActive(false);
         }
     }

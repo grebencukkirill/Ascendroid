@@ -34,7 +34,6 @@ public class EnergyCapsuleManager : MonoBehaviour
     {
         if (collectedCount >= slots.Length)
         {
-            Debug.LogWarning("All capsules already collected.");
             return;
         }
 
@@ -45,8 +44,6 @@ public class EnergyCapsuleManager : MonoBehaviour
         collectedCount++;
         
         audioSource.Play();
-
-        Debug.Log($"Capsule collected! Total: {collectedCount}");
     }
 
     public int GetCollectedCount()

@@ -21,7 +21,7 @@ public class RobotController : MonoBehaviour
     private bool isGravChanged = false;
     private bool isReversed = false;
     private bool isReversing = false;
-    private bool hasJumped = false; // Флаг для отслеживания прыжка
+    private bool hasJumped = false;
     private bool isDead = false;
     private float currentSpeed;
 
@@ -42,10 +42,10 @@ public class RobotController : MonoBehaviour
     {
         if (isGrounded && !isReversing)
         {
-            if (hasJumped && Mathf.Abs(rb.velocity.y) < 0.1f) // Проверяем, действительно ли робот приземлился
+            if (hasJumped && Mathf.Abs(rb.velocity.y) < 0.1f)
             {
-                currentSpeed = walkSpeed; // Возвращаем скорость на исходную
-                hasJumped = false; // Сбрасываем флаг прыжка
+                currentSpeed = walkSpeed;
+                hasJumped = false;
             }
 
             MoveForward();
@@ -68,11 +68,10 @@ public class RobotController : MonoBehaviour
         {
             foreach (ContactPoint2D contact in collision.contacts)
             {
-                // Проверяем, в каком направлении происходит столкновение
-                Vector2 gravityDirection = Physics2D.gravity.normalized; // Нормализуем вектор гравитации
-                float angle = Vector2.Angle(contact.normal, -gravityDirection); // Проверяем угол между нормалью и направлением гравитации
+                Vector2 gravityDirection = Physics2D.gravity.normalized;
+                float angle = Vector2.Angle(contact.normal, -gravityDirection);
 
-                if (angle < 45f) // Если угол меньше 45 градусов, считаем это приземлением
+                if (angle < 45f)
                 {
                     isGrounded = true;
                     break;
@@ -148,8 +147,8 @@ public class RobotController : MonoBehaviour
         Vector2 jumpDirection = new Vector2(0f, isGravChanged ? -jumpPower : jumpPower);
         rb.AddForce(jumpDirection, ForceMode2D.Impulse);
 
-        currentSpeed = walkSpeed * forwardPower; // Увеличиваем скорость во время прыжка
-        hasJumped = true; // Устанавливаем флаг прыжка
+        currentSpeed = walkSpeed * forwardPower;
+        hasJumped = true;
     }
 
     public void ChangeGravity()
@@ -169,14 +168,12 @@ public class RobotController : MonoBehaviour
         }
         else if (!isGrounded)
         {
-            // При ускорении в воздухе добавляем силу
             if (horizontalMultiplier > 1f)
             {
                 Vector2 speedDirection = new Vector2(isReversed ? -horizontalMultiplier : horizontalMultiplier,
                                                      (isGravChanged ? -verticalMultiplier : verticalMultiplier));
                 rb.AddForce(speedDirection, ForceMode2D.Impulse);
             }
-            // При замедлении — прямо изменяем скорость
             else
             {
                 Vector2 newVelocity = rb.velocity;
@@ -218,16 +215,15 @@ public class RobotController : MonoBehaviour
 
     public void ResetGravity()
     {
-        if (isGravChanged) // Сброс только если гравитация была изменена
+        if (isGravChanged)
         {
             ChangeGravity();
         }
     }
 
-    // Метод для сброса направления разворота
     public void ResetDirection()
     {
-        if (isReversed) // Сброс только если робот был развёрнут
+        if (isReversed)
         {
             StartCoroutine(ReverseDirection());
         }
@@ -260,14 +256,12 @@ public class RobotController : MonoBehaviour
         string capsuleKey = $"{levelName}_capsules";
         string completedKey = $"{levelName}_completed";
 
-        // сохраняем максимум капсул
         int prevBest = PlayerPrefs.GetInt(capsuleKey, 0);
         if (capsules > prevBest)
             PlayerPrefs.SetInt(capsuleKey, capsules);
 
         PlayerPrefs.SetInt(completedKey, 1);
 
-        // Разблокируем следующий уровень — только если он есть
         int currentIndex = SceneManager.GetActiveScene().buildIndex;
         int nextIndex = currentIndex + 1;
 

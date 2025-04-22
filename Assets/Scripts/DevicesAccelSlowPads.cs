@@ -72,7 +72,6 @@ public class DevicesAccelSlowPads : MonoBehaviour
         accelCount = 0;
         slowCount = 0;
 
-        // Останавливаем звуки на всех активных объектах
         foreach (var pad in FindObjectsOfType<DevicesAccelSlowPads>())
         {
             if (pad.accelSource != null)

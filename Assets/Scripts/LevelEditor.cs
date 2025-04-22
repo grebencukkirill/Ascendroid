@@ -48,7 +48,7 @@ public class LevelEditor : MonoBehaviour
         audioManager.OnPlayModeReady += OnPlayModeStart;
         audioManager.OnEditModeReady += OnEditModeStart;
 
-        EnterEditorMode(); // стартуем в редакторском режиме
+        EnterEditorMode();
     }
 
     public void ToggleEditorMode()
@@ -145,12 +145,10 @@ public class LevelEditor : MonoBehaviour
     {
         if (!isEditorMode) return;
 
-        // Обновляем позиции силуэтов всегда
         if (isEraseMode)
         {
             UpdateEraserPosition();
 
-            // Только если клик и НЕ над UI — стираем
             if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
             {
                 EraseDevice();
@@ -160,7 +158,6 @@ public class LevelEditor : MonoBehaviour
         {
             UpdateSilhouettePosition();
 
-            // Только если клик и НЕ над UI — размещаем
             if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject() && CanPlaceDevice())
             {
                 PlaceDevice();
@@ -194,23 +191,20 @@ public class LevelEditor : MonoBehaviour
         Vector2 targetPosition = deviceSilhouette.transform.position;
         Vector2 cellSize = new Vector2(gridSize - 0.1f, gridSize - 0.1f);
 
-        // Проверка занятости целевой клетки
         Collider2D[] collidersAtTarget = Physics2D.OverlapBoxAll(targetPosition, cellSize, 0f);
         foreach (var col in collidersAtTarget)
         {
             if (col.gameObject != deviceSilhouette)
             {
-                return false; // Если есть любой объект (включая Ground), целевая клетка занята
+                return false;
             }
         }
 
-        // Проверка для Jump, GravChange и Springboard: наличие Ground сверху или снизу
         if (selectedDevicePrefab.name == "LiftPad" || selectedDevicePrefab.name == "GravFlip" || selectedDevicePrefab.name == "DashPad")
         {
             bool hasGroundBelow = false;
             bool hasGroundAbove = false;
 
-            // Проверка на Ground снизу
             Vector2 belowPosition = targetPosition + Vector2.down * gridSize;
             Collider2D[] collidersBelow = Physics2D.OverlapBoxAll(belowPosition, cellSize, 0f);
             foreach (var col in collidersBelow)
@@ -222,7 +216,6 @@ public class LevelEditor : MonoBehaviour
                 }
             }
 
-            // Проверка на Ground сверху
             Vector2 abovePosition = targetPosition + Vector2.up * gridSize;
             Collider2D[] collidersAbove = Physics2D.OverlapBoxAll(abovePosition, cellSize, 0f);
             foreach (var col in collidersAbove)
@@ -234,25 +227,20 @@ public class LevelEditor : MonoBehaviour
                 }
             }
 
-            // Разрешить размещение только если есть Ground снизу или сверху
             if (!hasGroundBelow && !hasGroundAbove) return false;
 
             
         }
 
-        return true; // Если все условия выполнены, разрешаем установку устройства
+        return true; 
     }
-
-
-
 
 
     void AdjustSilhouetteRotation()
     {
         Vector2 checkPosition = deviceSilhouette.transform.position;
-        Vector2 cellSize = new Vector2(gridSize - 0.1f, gridSize - 0.1f); // Немного меньше, чтобы избежать ложных срабатываний
+        Vector2 cellSize = new Vector2(gridSize - 0.1f, gridSize - 0.1f);
 
-        // Проверка на Ground снизу
         Vector2 belowPosition = checkPosition + Vector2.down * gridSize;
         Collider2D[] collidersBelow = Physics2D.OverlapBoxAll(belowPosition, cellSize, 0f);
         bool hasGroundBelow = false;
@@ -265,7 +253,6 @@ public class LevelEditor : MonoBehaviour
             }
         }
 
-        // Проверка на Ground сверху
         Vector2 abovePosition = checkPosition + Vector2.up * gridSize;
         Collider2D[] collidersAbove = Physics2D.OverlapBoxAll(abovePosition, cellSize, 0f);
         bool hasGroundAbove = false;
@@ -300,17 +287,13 @@ public class LevelEditor : MonoBehaviour
     {
         Vector3 devicePosition = deviceSilhouette.transform.position;
 
-        // Установить устройство, только если есть доступные экземпляры
         int deviceIndex = System.Array.IndexOf(devicePanel.devicePrefabs, selectedDevicePrefab);
         if (deviceIndex >= 0 && devicePanel.deviceCounts[deviceIndex] > 0)
         {
             GameObject placedDevice = Instantiate(selectedDevicePrefab, devicePosition, Quaternion.identity);
             placedDevice.transform.localScale = deviceSilhouette.transform.localScale;
 
-            // Уменьшаем количество доступных устройств
             devicePanel.UpdateDeviceCount(deviceIndex, -1);
-
-            Debug.Log("Device placed at: " + devicePosition);
 
             if (devicePanel.deviceCounts[deviceIndex] <= 0)
             {
@@ -318,10 +301,6 @@ public class LevelEditor : MonoBehaviour
                 deviceSilhouette = null;
                 selectedDevicePrefab = null;
             }
-        }
-        else
-        {
-            Debug.LogWarning("No devices left to place.");
         }
     }
 
@@ -350,8 +329,8 @@ public class LevelEditor : MonoBehaviour
             {
                 Destroy(eraserSilhouette);
             }
-            selectedDevicePrefab = null; // Сбрасываем выбранное устройство
-            CreateDeviceSilhouette(); // Удаляем силуэт устройства
+            selectedDevicePrefab = null;
+            CreateDeviceSilhouette();
         }
     }
 
@@ -362,7 +341,6 @@ public class LevelEditor : MonoBehaviour
             Destroy(eraserSilhouette);
         }
 
-        // Создаем силуэт ластика
         eraserSilhouette = new GameObject("EraserSilhouette");
         SpriteRenderer sr = eraserSilhouette.AddComponent<SpriteRenderer>();
         sr.sprite = eraserSprite;
@@ -399,7 +377,6 @@ public class LevelEditor : MonoBehaviour
         {
             if (IsDeviceTag(col.tag))
             {
-                // Увеличиваем количество устройств
                 int deviceIndex = System.Array.IndexOf(devicePanel.deviceTags, col.tag);
                 if (deviceIndex >= 0)
                 {
@@ -407,7 +384,6 @@ public class LevelEditor : MonoBehaviour
                 }
 
                 Destroy(col.gameObject);
-                Debug.Log($"Device with tag {col.tag} erased at grid cell: {gridPosition}");
                 break;
             }
         }
@@ -433,8 +409,6 @@ public class LevelEditor : MonoBehaviour
                 Destroy(device);
             }
         }
-
-        Debug.Log("All devices cleared and counts reset.");
     }
 
 }

@@ -26,7 +26,6 @@ public class PauseMenuUI : MonoBehaviour
 
     public void PauseGame()
     {
-        // Сохраняем текущее состояние времени
         previousTimeScale = Time.timeScale;
 
         pausePanel.SetActive(true);
@@ -39,7 +38,6 @@ public class PauseMenuUI : MonoBehaviour
         confirmPanel.SetActive(false);
         settingsPanel.SetActive(false);
 
-        // Возвращаем предыдущее состояние
         Time.timeScale = previousTimeScale;
     }
 

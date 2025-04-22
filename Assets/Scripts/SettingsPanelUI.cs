@@ -111,7 +111,7 @@ public class SettingsPanelUI : MonoBehaviour
 
     public void SaveSettings()
     {
-        // Громкость (только сохраняем, не применяем — уже применена)
+        // Громкость
         PlayerPrefs.SetFloat("Music", musicSlider.value);
         PlayerPrefs.SetFloat("SFX", sfxSlider.value);
 
@@ -223,7 +223,6 @@ public class SettingsPanelUI : MonoBehaviour
         UpdateLanguage();
     }
 
-    // Вызывается при изменении слайдера
     public void OnMusicVolumeChanged(float value)
     {
         SetVolume("Volume_Music", value);
