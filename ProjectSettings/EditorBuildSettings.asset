@@ -12,15 +12,23 @@ EditorBuildSettings:
     path: Assets/Scenes/LevelSelect.unity
     guid: 94009b516eec7e141ab5cca8788fc3d6
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
-  - enabled: 1
     path: Assets/Scenes/Level_1.unity
     guid: 570ba152e3c2f084abeb8f00ab0d63d3
   - enabled: 1
     path: Assets/Scenes/Level_2.unity
-    guid: edcddaf7aa6b7e74bbefb4184eb2c8f0
+    guid: b7e74cb89cee16449b2804a70f699ba5
   - enabled: 1
     path: Assets/Scenes/Level_3.unity
-    guid: 78a3836ec70637c4fbcb83a3d04db970
-  m_configObjects: {}
+    guid: 6191e645e8179c547b03f27e54e82b90
+  - enabled: 1
+    path: Assets/Scenes/Level_4.unity
+    guid: 12425ddd8e365794aa86b22a6b9fea6d
+  - enabled: 1
+    path: Assets/Scenes/Level_5.unity
+    guid: 20b1567f393399c40a1a032460d85606
+  - enabled: 1
+    path: Assets/Scenes/Level_6.unity
+    guid: 27dc9bd771d46cb4d99b07a1bc21bba4
+  m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: 0137ea823c1b0064eaeb0155d32b9a3a, type: 2}
+    com.unity.localization.settings: {fileID: 11400000, guid: 7ab38dce6f6f6cb478f1c090e428ee0f, type: 2}

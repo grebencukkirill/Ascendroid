@@ -1,0 +1,226 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: UI_Texts_en
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 109c29fb45c910a4b928509b2f078071, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 206476140544
+    m_Localized: Levels
+    m_Metadata:
+      m_Items: []
+  - m_Id: 739077251072
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 799747858432
+    m_Localized: Quit the game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1274975084544
+    m_Localized: OK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1155689078784
+    m_Localized: 'Are you sure?
+
+      All unsaved data will be lost'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1421842833408
+    m_Localized: Cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3652776353792
+    m_Localized: <Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7453453312000
+    m_Localized: Return
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7578871390208
+    m_Localized: Levels
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7629840572416
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7692658663424
+    m_Localized: Quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8332541681664
+    m_Localized: Pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9935768248320
+    m_Localized: Retry
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9856785309696
+    m_Localized: Levels
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10001396523008
+    m_Localized: Next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10748053938176
+    m_Localized: Level completed!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12310348292096
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12359165796352
+    m_Localized: Music Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12414157316096
+    m_Localized: Sounds Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12456976965632
+    m_Localized: Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12506331340800
+    m_Localized: Screen Mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12747419934720
+    m_Localized: Framerate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12779464417280
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12825098444800
+    m_Localized: Save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21290780975104
+    m_Localized: Fullscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21380123844608
+    m_Localized: Windowed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21434687545344
+    m_Localized: Borderless
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28663520157696
+    m_Localized: Level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35349655969792
+    m_Localized: "Ascendor: throws the robot up\r"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35445420318720
+    m_Localized: 'Dash Booster: throws the robot forward'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35455251767296
+    m_Localized: "PathShift Node: changes direction of movement\r"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35462637936640
+    m_Localized: "GravCore Modulator: changes gravity\r"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35512160083968
+    m_Localized: "Accel Field: accelerates movement\r"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35528471732224
+    m_Localized: "Stasis Field: slows movement down\r"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35550747680768
+    m_Localized: "Remove selected device\r"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37658871980032
+    m_Localized: "Remove all devices\r"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64965296775168
+    m_Localized: OK>
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65105420083200
+    m_Localized: "There\u2019s been an accident on the ship. Help the repair robot
+      reach the damage by placing devices to overcome obstacles."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65980628721664
+    m_Localized: Collect energy capsules to complete the level perfectly.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 66114699649024
+    m_Localized: The number of collected capsules is shown on this screen.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 66273382752256
+    m_Localized: Try using basic devices to help the robot climb or jump over obstacles.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 66484003921920
+    m_Localized: You can also remove devices if you placed them incorrectly.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 66604061679616
+    m_Localized: Once you're done placing devices, start the test mode to see if
+      the robot can reach the end of the level.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 85131556544512
+    m_Localized: Sometimes the finish or energy capsules are behind the robot's movement
+      direction.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 85166549622784
+    m_Localized: Use the turn device to make the robot change direction in such cases.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88614368174080
+    m_Localized: Sometimes an obstacle, capsule, or finish is too high for a normal
+      jump.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88635704598528
+    m_Localized: Use the gravity switch device to reach your goal in such cases.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 102516808212480
+    m_Localized: "Sometimes the speed of the robot may be too low or, conversely,
+      too high.\r"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 102551163756544
+    m_Localized: Use acceleration or slowdown devices to adjust its movement.
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

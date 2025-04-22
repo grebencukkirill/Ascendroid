@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 public class LevelSelectUI : MonoBehaviour
 {
@@ -29,22 +31,28 @@ public class LevelSelectUI : MonoBehaviour
     void GenerateLevelButtons()
     {
         int sceneCount = SceneManager.sceneCountInBuildSettings;
+        var localizedPrefix = new LocalizedString("UI_Texts", "LevelName");
 
         for (int i = 0; i < sceneCount; i++)
         {
             string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
             string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
 
-            // Пропускаем главное меню и сцены без "Level" в имени
             if (!sceneName.ToLower().Contains("level")) continue;
-
-            if (sceneName == "LevelSelect")
-                continue;
+            if (sceneName == "LevelSelect") continue;
 
             GameObject buttonObj = Instantiate(levelButtonPrefab, contentParent);
             Button button = buttonObj.GetComponent<Button>();
 
-            buttonObj.GetComponentInChildren<TMP_Text>().text = sceneName;
+            // Вытаскиваем номер уровня из имени сцены (например, Level_3 -> 3)
+            string levelNumber = System.Text.RegularExpressions.Regex.Match(sceneName, @"\d+$").Value;
+
+            // Создаём локализованный текст (например, "Level 3" или "Уровень 3")
+            localizedPrefix.GetLocalizedStringAsync().Completed += handle =>
+            {
+                string prefix = handle.Result;
+                buttonObj.GetComponentInChildren<TMP_Text>().text = $"{prefix} {levelNumber}";
+            };
 
             // Капсулы
             int collected = PlayerPrefs.GetInt($"{sceneName}_capsules", 0);

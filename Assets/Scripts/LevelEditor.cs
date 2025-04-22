@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Tilemaps;
+using UnityEngine.EventSystems;
 
 public class LevelEditor : MonoBehaviour
 {
@@ -142,25 +143,27 @@ public class LevelEditor : MonoBehaviour
 
     void Update()
     {
-        if (isEditorMode)
+        if (!isEditorMode) return;
+
+        // Обновляем позиции силуэтов всегда
+        if (isEraseMode)
         {
-            if (isEraseMode)
-            {
-                UpdateEraserPosition();
+            UpdateEraserPosition();
 
-                if (Input.GetMouseButtonDown(0))
-                {
-                    EraseDevice();
-                }
+            // Только если клик и НЕ над UI — стираем
+            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+            {
+                EraseDevice();
             }
-            else if (selectedDevicePrefab != null)
-            {
-                UpdateSilhouettePosition();
+        }
+        else if (selectedDevicePrefab != null)
+        {
+            UpdateSilhouettePosition();
 
-                if (Input.GetMouseButtonDown(0) && CanPlaceDevice())
-                {
-                    PlaceDevice();
-                }
+            // Только если клик и НЕ над UI — размещаем
+            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject() && CanPlaceDevice())
+            {
+                PlaceDevice();
             }
         }
     }

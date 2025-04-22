@@ -61,8 +61,8 @@ public class LaserController : MonoBehaviour
             else
             {
                 yield return StartCoroutine(ActivateLaser());
-                yield return new WaitForSeconds(activeDuration);
                 yield return StartCoroutine(DeactivateLaser());
+                yield return new WaitForSeconds(activeDuration);
             }
         }
     }

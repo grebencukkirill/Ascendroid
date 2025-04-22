@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
-
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 public class DevicePanel : MonoBehaviour
 {
@@ -33,9 +34,9 @@ public class DevicePanel : MonoBehaviour
     private Color selectedColor = new Color32(0x4C, 0x8D, 0xA8, 0xFF);
 
     [Header("Tooltip Elements")]
-    public GameObject tooltipObject;                  // Tooltip GameObject
-    public TextMeshProUGUI tooltipText;               // Text inside tooltip
-    public string[] deviceTooltips;                   // Array of tooltip descriptions for each device
+    public GameObject tooltipObject;
+    public TextMeshProUGUI tooltipText;
+    public LocalizedString[] deviceTooltips;
 
     private Dictionary<int, int> deviceIndexToButtonIndex = new Dictionary<int, int>(); // deviceIndex => buttonIndex
     private Dictionary<int, int> buttonIndexToDeviceIndex = new Dictionary<int, int>(); // buttonIndex => deviceIndex
@@ -122,18 +123,8 @@ public class DevicePanel : MonoBehaviour
         // Отключаем оставшиеся кнопки
         for (int j = activeButtonIndex; j < deviceButtons.Length; j++)
         {
-            deviceButtons[j].interactable = false;
-            Transform iconTransform = deviceButtons[j].transform.Find("UI_DeviceButton_Icon");
-            if (iconTransform != null)
-            {
-                Image iconImage = iconTransform.GetComponent<Image>();
-                if (iconImage != null)
-                {
-                    iconImage.sprite = null;
-                    iconImage.enabled = false;
-                }
-            }
-            deviceCountTexts[j].text = "";
+
+            deviceButtons[j].gameObject.SetActive(false);
         }
 
         eraseButton.onClick.AddListener(() => OnEraseButtonClicked());
@@ -142,52 +133,32 @@ public class DevicePanel : MonoBehaviour
 
     void SetupEraseAndClearTooltips()
     {
-        // Проверяем, что массив подсказок имеет достаточное количество элементов
         if (deviceTooltips.Length < 2)
         {
             Debug.LogError("Device tooltips array must have at least two elements for erase and clear buttons.");
             return;
         }
 
-        // Получаем подсказки для ластика и очистки
-        string eraseTooltip = deviceTooltips[deviceTooltips.Length - 2];
-        string clearTooltip = deviceTooltips[deviceTooltips.Length - 1];
+        LocalizedString eraseTooltip = deviceTooltips[deviceTooltips.Length - 2];
+        LocalizedString clearTooltip = deviceTooltips[deviceTooltips.Length - 1];
 
         // Ластик
         EventTrigger eraseTrigger = eraseButton.gameObject.AddComponent<EventTrigger>();
-
-        // PointerEnter для ластика
-        EventTrigger.Entry eraseEnter = new EventTrigger.Entry
-        {
-            eventID = EventTriggerType.PointerEnter
-        };
+        EventTrigger.Entry eraseEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
         eraseEnter.callback.AddListener((eventData) => ShowTooltip(eraseTooltip, eraseButton));
         eraseTrigger.triggers.Add(eraseEnter);
 
-        // PointerExit для ластика
-        EventTrigger.Entry eraseExit = new EventTrigger.Entry
-        {
-            eventID = EventTriggerType.PointerExit
-        };
+        EventTrigger.Entry eraseExit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
         eraseExit.callback.AddListener((eventData) => HideTooltip());
         eraseTrigger.triggers.Add(eraseExit);
 
         // Очистка
         EventTrigger clearTrigger = clearButton.gameObject.AddComponent<EventTrigger>();
-
-        // PointerEnter для очистки
-        EventTrigger.Entry clearEnter = new EventTrigger.Entry
-        {
-            eventID = EventTriggerType.PointerEnter
-        };
+        EventTrigger.Entry clearEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
         clearEnter.callback.AddListener((eventData) => ShowTooltip(clearTooltip, clearButton));
         clearTrigger.triggers.Add(clearEnter);
 
-        // PointerExit для очистки
-        EventTrigger.Entry clearExit = new EventTrigger.Entry
-        {
-            eventID = EventTriggerType.PointerExit
-        };
+        EventTrigger.Entry clearExit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
         clearExit.callback.AddListener((eventData) => HideTooltip());
         clearTrigger.triggers.Add(clearExit);
     }
@@ -302,21 +273,27 @@ public class DevicePanel : MonoBehaviour
     {
         if (deviceIndex >= 0 && deviceIndex < deviceTooltips.Length)
         {
-            tooltipText.text = deviceTooltips[deviceIndex];
+            deviceTooltips[deviceIndex].GetLocalizedStringAsync().Completed += handle =>
+            {
+                tooltipText.text = handle.Result;
+                tooltipObject.SetActive(true);
+
+                Vector3 buttonPosition = button.transform.position;
+                tooltipObject.transform.position = new Vector3(buttonPosition.x, tooltipObject.transform.position.y, buttonPosition.z);
+            };
+        }
+    }
+
+    public void ShowTooltip(LocalizedString localizedTooltip, Button button)
+    {
+        localizedTooltip.GetLocalizedStringAsync().Completed += handle =>
+        {
+            tooltipText.text = handle.Result;
             tooltipObject.SetActive(true);
 
             Vector3 buttonPosition = button.transform.position;
             tooltipObject.transform.position = new Vector3(buttonPosition.x, tooltipObject.transform.position.y, buttonPosition.z);
-        }
-    }
-
-    public void ShowTooltip(string tooltipMessage, Button button)
-    {
-        tooltipText.text = tooltipMessage;
-        tooltipObject.SetActive(true);
-
-        Vector3 buttonPosition = button.transform.position;
-        tooltipObject.transform.position = new Vector3(buttonPosition.x, tooltipObject.transform.position.y, buttonPosition.z);
+        };
     }
 
     public void HideTooltip()
