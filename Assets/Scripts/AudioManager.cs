@@ -5,56 +5,131 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
-    public AudioSource editSource;
-    public AudioSource playSource;
+    [Header("Audio Sources")]
+    public AudioSource editSourceA;
+    public AudioSource editSourceB;
+    public AudioSource playSourceA;
+    public AudioSource playSourceB;
 
+    [Header("Audio Clips")]
     public AudioClip editClip;
     public AudioClip playClip;
 
-    private float syncInterval = 1.889f;
-    private float fadeDuration = 11.334f;
+    [Header("Timing Settings")]
+    public float bpm = 127f;
+    public int fadeBeats = 24;
 
+    private float fadeDuration;
     private float loopPointEdit;
     private float loopPointPlay;
+    private float syncInterval;
 
-    private Coroutine currentSwitchCoroutine;
+    private AudioSource activeEdit, inactiveEdit;
+    private AudioSource activePlay, inactivePlay;
+
     private bool isPlayMode = false;
+    private Coroutine currentSwitchCoroutine;
+    private Coroutine currentLoopCoroutine;
 
     public Action OnPlayModeReady;
     public Action OnEditModeReady;
 
+    public static AudioManager Instance;
+
+    void Awake()
+    {
+        Instance = this;
+    }
+
     void Start()
     {
         if (MenuMusicManager.Instance != null)
-        {
             MenuMusicManager.Instance.StopMusic();
-        }
+
+        fadeDuration = 60f / bpm * fadeBeats;
+        syncInterval = 60f / bpm * 4f;
 
         loopPointEdit = editClip.length - fadeDuration;
         loopPointPlay = playClip.length - fadeDuration;
 
-        editSource.clip = editClip;
-        playSource.clip = playClip;
+        SetupSource(editSourceA, editClip);
+        SetupSource(editSourceB, editClip);
+        SetupSource(playSourceA, playClip);
+        SetupSource(playSourceB, playClip);
 
-        editSource.loop = false;
-        playSource.loop = false;
+        activeEdit = editSourceA;
+        inactiveEdit = editSourceB;
+        activePlay = playSourceA;
+        inactivePlay = playSourceB;
 
-        editSource.Play();
+        StartLoop(edit: true);
     }
 
-    void Update()
+    void SetupSource(AudioSource src, AudioClip clip)
     {
-        float time = GetCurrentTime();
+        src.clip = clip;
+        src.loop = false;
+        src.volume = 1f;
+    }
 
-        if (isPlayMode && time >= loopPointPlay)
+    void StartLoop(bool edit)
+    {
+        StopCurrentLoop();
+
+        if (edit)
         {
-            playSource.time = 0f;
-            playSource.Play();
+            activeEdit.time = 0f;
+            activeEdit.Play();
+            currentLoopCoroutine = StartCoroutine(LoopWithFade(editMode: true));
         }
-        else if (!isPlayMode && time >= loopPointEdit)
+        else
         {
-            editSource.time = 0f;
-            editSource.Play();
+            activePlay.time = 0f;
+            activePlay.Play();
+            currentLoopCoroutine = StartCoroutine(LoopWithFade(editMode: false));
+        }
+    }
+
+    void StopCurrentLoop()
+    {
+        if (currentLoopCoroutine != null)
+            StopCoroutine(currentLoopCoroutine);
+    }
+
+    IEnumerator LoopWithFade(bool editMode)
+    {
+        while (true)
+        {
+            AudioSource current = editMode ? activeEdit : activePlay;
+            AudioSource next = editMode ? inactiveEdit : inactivePlay;
+            float loopPoint = editMode ? loopPointEdit : loopPointPlay;
+            AudioClip clip = editMode ? editClip : playClip;
+
+            float timeToFade = loopPoint - current.time;
+            if (timeToFade > 0)
+                yield return new WaitForSecondsRealtime(timeToFade);
+
+            next.time = 0f;
+            next.volume = 1f;
+            next.Play();
+
+            StartCoroutine(FadeOut(current, fadeDuration));
+
+            yield return new WaitForSecondsRealtime(fadeDuration);
+
+            // Swap sources
+            if (editMode)
+            {
+                var temp = activeEdit;
+                activeEdit = inactiveEdit;
+                inactiveEdit = temp;
+            }
+            else
+            {
+                var temp = activePlay;
+                activePlay = inactivePlay;
+                inactivePlay = temp;
+            }
         }
     }
 
@@ -78,46 +153,84 @@ public class AudioManager : MonoBehaviour
         currentSwitchCoroutine = StartCoroutine(SwitchToEditMode(force));
     }
 
-    private IEnumerator SwitchToEditMode(bool force)
+    IEnumerator SwitchToPlayMode()
     {
-        if (!force)
-        {
-            float waitTime = syncInterval - (GetCurrentTime() % syncInterval);
-            yield return new WaitForSecondsRealtime(waitTime);
-        }
+        float wait = syncInterval - (GetCurrentTime() % syncInterval);
+        yield return new WaitForSecondsRealtime(wait);
 
-        playSource.Stop();
-        editSource.time = force ? 0f : GetCurrentTime();
-        editSource.Play();
-        isPlayMode = false;
-
-        OnEditModeReady?.Invoke();
-    }
-
-    private IEnumerator SwitchToPlayMode()
-    {
-        float waitTime = syncInterval - (GetCurrentTime() % syncInterval);
-        yield return new WaitForSecondsRealtime(waitTime);
-
+        // --- Логика фрагмента (чтобы соблюсти структуру перехода)
         float currentTime = GetCurrentTime();
         int editFragmentIndex = Mathf.FloorToInt(currentTime / syncInterval);
         int localFragment = editFragmentIndex % 4;
         int nextFragment = (localFragment + 1) % 4;
 
         float targetTime = nextFragment * syncInterval;
-        if (targetTime >= playClip.length - fadeDuration)
+
+        // Гарантируем, что не заедем в fade-зону
+        if (targetTime >= loopPointPlay)
             targetTime = 0f;
 
-        playSource.time = targetTime;
-        playSource.Play();
-        editSource.Stop();
+        // Остановить старый цикл без fade
+        StopCurrentLoop();
+
+        activeEdit.Stop();
+        inactiveEdit.Stop();
+
+        // Запуск Play-трека на рассчитанной позиции
+        activePlay.time = targetTime;
+        activePlay.volume = 1f;
+        activePlay.Play();
+
+        // Перезапуск зацикливания с fade'ом внутри режима
+        currentLoopCoroutine = StartCoroutine(LoopWithFade(editMode: false));
         isPlayMode = true;
 
         OnPlayModeReady?.Invoke();
     }
 
-    float GetCurrentTime()
+    IEnumerator SwitchToEditMode(bool force)
     {
-        return isPlayMode ? playSource.time : editSource.time;
+        if (!force)
+        {
+            float wait = syncInterval - (GetCurrentTime() % syncInterval);
+            yield return new WaitForSecondsRealtime(wait);
+        }
+
+        float currentTime = GetCurrentTime();
+        float safeTime = Mathf.Min(currentTime, loopPointEdit);
+
+        StopCurrentLoop();
+
+        // Stop play mode source IMMEDIATELY
+        activePlay.Stop();
+        inactivePlay.Stop();
+
+        activeEdit.time = force ? 0f : safeTime;
+        activeEdit.volume = 1f;
+        activeEdit.Play();
+
+        currentLoopCoroutine = StartCoroutine(LoopWithFade(editMode: true));
+        isPlayMode = false;
+
+        OnEditModeReady?.Invoke();
+    }
+
+    public float GetCurrentTime()
+    {
+        return isPlayMode ? activePlay.time : activeEdit.time;
+    }
+
+    IEnumerator FadeOut(AudioSource source, float duration)
+    {
+        float startVol = source.volume;
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            source.volume = Mathf.Lerp(startVol, 0f, t / duration);
+            yield return null;
+        }
+        source.Stop();
+        source.volume = 1f;
     }
 }

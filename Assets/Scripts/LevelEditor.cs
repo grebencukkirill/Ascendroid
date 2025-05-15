@@ -38,6 +38,7 @@ public class LevelEditor : MonoBehaviour
     void Start()
     {
         startPosition = robot.position;
+
         if (Physics2D.gravity.y > 0)
         {
             Physics2D.gravity = new Vector2(Physics2D.gravity.x, -Physics2D.gravity.y);
@@ -45,11 +46,24 @@ public class LevelEditor : MonoBehaviour
 
         devicePanel.deviceTags = deviceTags;
 
+        StartCoroutine(InitLaserPreviews());
+
         audioManager.OnPlayModeReady += OnPlayModeStart;
         audioManager.OnEditModeReady += OnEditModeStart;
 
-        EnterEditorMode();
+        EnterEditorMode(); // потом уже переключение
     }
+
+    IEnumerator InitLaserPreviews()
+    {
+        yield return null; // дождаться конца кадра
+
+        foreach (LaserController laser in FindObjectsOfType<LaserController>())
+        {
+            laser.ShowEditorPreview();
+        }
+    }
+
 
     public void ToggleEditorMode()
     {
@@ -85,6 +99,8 @@ public class LevelEditor : MonoBehaviour
         isEditorMode = true;
         Time.timeScale = 0f;
 
+        LaserManager.Instance?.ResetTimer(); 
+
         robot.position = startPosition;
         robotController.ResetGravity();
         robotController.ResetDirection();
@@ -99,7 +115,7 @@ public class LevelEditor : MonoBehaviour
 
         foreach (LaserController laser in FindObjectsOfType<LaserController>())
         {
-            laser.StopLaser();
+            laser.ShowEditorPreview();
         }
     }
 
@@ -113,9 +129,12 @@ public class LevelEditor : MonoBehaviour
 
         editorToggleButton.image.sprite = editorOffSprite;
 
+        LaserManager.Instance?.ResetTimer();
+
+        // После выхода из режима редактирования активируем лазеры
         foreach (LaserController laser in FindObjectsOfType<LaserController>())
         {
-            laser.StartLaser();
+            laser.StartLaser(); // запускаем лазеры
         }
     }
 

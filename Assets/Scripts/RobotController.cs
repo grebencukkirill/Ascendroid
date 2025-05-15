@@ -40,6 +40,7 @@ public class RobotController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        CheckGrounded();
         if (isGrounded && !isReversing)
         {
             if (hasJumped && Mathf.Abs(rb.velocity.y) < 0.1f)
@@ -62,27 +63,19 @@ public class RobotController : MonoBehaviour
         rb.velocity = new Vector2((isReversed ? -1 : 1) * currentSpeed, rb.velocity.y);
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void CheckGrounded()
     {
-        if (collision.collider.CompareTag("Ground"))
+        float rayLength = 0.55f;
+        Vector2 origin = transform.position;
+        Vector2 direction = isGravChanged ? Vector2.up : Vector2.down;
+
+        RaycastHit2D hit = Physics2D.Raycast(origin, direction, rayLength, LayerMask.GetMask("Ground"));
+
+        if (hit.collider != null)
         {
-            foreach (ContactPoint2D contact in collision.contacts)
-            {
-                Vector2 gravityDirection = Physics2D.gravity.normalized;
-                float angle = Vector2.Angle(contact.normal, -gravityDirection);
-
-                if (angle < 45f)
-                {
-                    isGrounded = true;
-                    break;
-                }
-            }
+            isGrounded = true;
         }
-    }
-
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        if (collision.collider.CompareTag("Ground"))
+        else
         {
             isGrounded = false;
         }
@@ -140,6 +133,18 @@ public class RobotController : MonoBehaviour
         rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         rb.velocity = new Vector2((isReversed ? -1 : 1) * currentSpeed, rb.velocity.y);
         isReversing = false;
+    }
+
+    private void ForceReverseDirection()
+    {
+        isReversing = false;
+
+        isReversed = !isReversed;
+
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+        rb.velocity = new Vector2((isReversed ? -1 : 1) * currentSpeed, rb.velocity.y);
+
+        PlayAnimation("Walk");
     }
 
     public void PerformJump(float jumpPower, float forwardPower)
@@ -225,7 +230,7 @@ public class RobotController : MonoBehaviour
     {
         if (isReversed)
         {
-            StartCoroutine(ReverseDirection());
+            ForceReverseDirection();
         }
     }
 

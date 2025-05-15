@@ -8917,10 +8917,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc9cb1b36b8229e4da2841e4c4b93b30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  editSource: {fileID: 110959404}
-  playSource: {fileID: 1713614500}
+  editSourceA: {fileID: 0}
+  editSourceB: {fileID: 0}
+  playSourceA: {fileID: 0}
+  playSourceB: {fileID: 0}
   editClip: {fileID: 8300000, guid: 848ec6b75712fdb49856785b32934c42, type: 3}
   playClip: {fileID: 8300000, guid: 8aa91f7c5a279704582db3f5f76eef2b, type: 3}
+  bpm: 127
+  fadeBeats: 24
 --- !u!1 &903266741
 GameObject:
   m_ObjectHideFlags: 0
@@ -16441,14 +16445,73 @@ MonoBehaviour:
   tooltipObject: {fileID: 1744230242}
   tooltipText: {fileID: 723124940}
   deviceTooltips:
-  - 'Ascendor: throws the robot up'
-  - 'Dash Booster: throws the robot forward '
-  - 'Vector Refractor: changes direction'
-  - 'GravCore Modulator: changes gravity'
-  - 'Accel Field: increases speed'
-  - 'Stasis Field: reduces speed'
-  - Erase
-  - Clear
+  - m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  - m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  - m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  - m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  - m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  - m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  - m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  - m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  references:
+    version: 2
+    RefIds: []
 --- !u!95 &1850585010
 Animator:
   serializedVersion: 5
@@ -18331,6 +18394,7 @@ MonoBehaviour:
   laserLength: 2
   phaseInterval: 0.4
   activeDuration: 1
+  useFullTail: 0
   direction: {x: 0, y: 1}
 --- !u!4 &1990699084
 Transform:

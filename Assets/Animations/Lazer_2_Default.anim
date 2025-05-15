@@ -25,9 +25,9 @@ AnimationClip:
     - time: 0.33333334
       value: {fileID: -1793576124, guid: 30087ac33afa71640b2c0845228fc323, type: 3}
     - time: 0.6666667
-      value: {fileID: -1793576124, guid: 30087ac33afa71640b2c0845228fc323, type: 3}
+      value: {fileID: 777908897, guid: 30087ac33afa71640b2c0845228fc323, type: 3}
     attribute: m_Sprite
-    path: Laser_1_Sprite
+    path: 
     classID: 212
     script: {fileID: 0}
     flags: 2
@@ -39,7 +39,7 @@ AnimationClip:
   m_ClipBindingConstant:
     genericBindings:
     - serializedVersion: 2
-      path: 1528516362
+      path: 0
       attribute: 0
       script: {fileID: 0}
       typeID: 212
@@ -50,7 +50,7 @@ AnimationClip:
     pptrCurveMapping:
     - {fileID: 777908897, guid: 30087ac33afa71640b2c0845228fc323, type: 3}
     - {fileID: -1793576124, guid: 30087ac33afa71640b2c0845228fc323, type: 3}
-    - {fileID: -1793576124, guid: 30087ac33afa71640b2c0845228fc323, type: 3}
+    - {fileID: 777908897, guid: 30087ac33afa71640b2c0845228fc323, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}

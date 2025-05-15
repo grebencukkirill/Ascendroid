@@ -10,114 +10,99 @@ public class LaserController : MonoBehaviour
     public GameObject segmentHalf;
     public GameObject segmentFull;
 
-    public int laserLength = 3;
-    public float phaseInterval = 0.2f;
-    public float activeDuration = 0.5f;
-
+    public int laserLength;
+    public float phaseInterval;
+    public float activeDuration;
     public Vector2Int direction = Vector2Int.up;
+    public bool lastSegmentIsHalf = true;
 
-    private Coroutine cycleCoroutine;
     private List<GameObject> currentSegments = new List<GameObject>();
+    private bool isActive = false;
+    private float totalCycleTime;
+    private float segmentTime;
+
+    private bool isEditorPreviewMode = false;
 
     private string[] deviceTags = { "LiftPad", "DashPad", "Redirect", "GravFlip", "AccelPad", "SlowPad" };
 
     void Start()
     {
-        StartLaser();
+        ResetLaser();
+        totalCycleTime = 2 * laserLength * phaseInterval + activeDuration;
+        segmentTime = phaseInterval;
     }
 
     public void StartLaser()
     {
-        StopLaser();
-        ReplaceSource(sourceEmpty);
-
-        cycleCoroutine = StartCoroutine(LaserCycle());
+        isActive = true;
+        isEditorPreviewMode = false;
+        ResetLaser();
     }
 
     public void StopLaser()
     {
-        if (cycleCoroutine != null)
-            StopCoroutine(cycleCoroutine);
+        isActive = false;
+        isEditorPreviewMode = false;
+        ResetLaser();
+    }
 
+    public void ResetLaser()
+    {
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
         foreach (var seg in currentSegments)
+        {
             if (seg) Destroy(seg);
-
+        }
         currentSegments.Clear();
         ReplaceSource(sourceEmpty);
     }
 
-    IEnumerator LaserCycle()
+    public void ShowEditorPreview()
     {
-        while (true)
-        {
-            if (laserLength == 1)
-            {
-                ReplaceSource(sourceHalf);
-                yield return new WaitForSeconds(phaseInterval);
+        isEditorPreviewMode = true;
+        ResetLaser();
 
-                ReplaceSource(sourceEmpty);
-                yield return new WaitForSeconds(phaseInterval);
-            }
-            else
-            {
-                yield return StartCoroutine(ActivateLaser());
-                yield return StartCoroutine(DeactivateLaser());
-                yield return new WaitForSeconds(activeDuration);
-            }
-        }
-    }
+        if (laserLength <= 0) return;
 
-    IEnumerator ActivateLaser()
-    {
-        ReplaceSource(sourceHalf);
-        yield return new WaitForSeconds(phaseInterval);
-
-        ReplaceSource(sourceFull);
-        yield return new WaitForSeconds(phaseInterval);
+        ReplaceSource(laserLength == 1 && lastSegmentIsHalf ? sourceHalf : sourceFull, true);
 
         for (int i = 1; i < laserLength; i++)
         {
             Vector3 pos = transform.position + new Vector3(direction.x, direction.y, 0) * i;
-
-            GameObject half = Instantiate(segmentHalf, pos, GetRotation(), transform);
-            currentSegments.Add(half);
-            EraseDevicesAt(pos);
-            yield return new WaitForSeconds(phaseInterval);
-
-            if (i == laserLength - 1) break;
-
-            GameObject full = Instantiate(segmentFull, pos, GetRotation(), transform);
-            Destroy(half);
-            currentSegments[currentSegments.Count - 1] = full;
-            EraseDevicesAt(pos);
-            yield return new WaitForSeconds(phaseInterval);
+            GameObject segment = Instantiate(
+                (i == laserLength - 1 && lastSegmentIsHalf) ? segmentHalf : segmentFull,
+                pos, GetRotation(), transform
+            );
+            MakePreviewVisual(segment);
+            currentSegments.Add(segment);
         }
     }
 
-    IEnumerator DeactivateLaser()
+    void MakePreviewVisual(GameObject obj)
     {
-        for (int i = currentSegments.Count - 1; i >= 0; i--)
+        var col = obj.GetComponent<Collider2D>();
+        if (col) Destroy(col);
+
+        var sr = obj.GetComponent<SpriteRenderer>();
+        if (sr)
         {
-            Destroy(currentSegments[i]);
-            yield return new WaitForSeconds(phaseInterval);
+            Color c = sr.color;
+            sr.color = new Color(1f, 0f, 0f, 0.3f); // красный, прозрачный
         }
-        currentSegments.Clear();
-
-        ReplaceSource(sourceHalf);
-        yield return new WaitForSeconds(phaseInterval);
-
-        ReplaceSource(sourceEmpty);
-        yield return new WaitForSeconds(phaseInterval);
     }
 
-    void ReplaceSource(GameObject newSource)
+    void ReplaceSource(GameObject newSource, bool isEditorPreview = false)
     {
         foreach (Transform child in transform)
         {
             Destroy(child.gameObject);
         }
 
-        Instantiate(newSource, transform.position, GetRotation(), transform);
+        var source = Instantiate(newSource, transform.position, GetRotation(), transform);
+        if (isEditorPreview) MakePreviewVisual(source);
     }
 
     Quaternion GetRotation()
@@ -127,6 +112,83 @@ public class LaserController : MonoBehaviour
         if (direction == Vector2Int.down) return Quaternion.Euler(0, 0, 180);
         if (direction == Vector2Int.left) return Quaternion.Euler(0, 0, 90);
         return Quaternion.identity;
+    }
+
+    void Update()
+    {
+        if (!isActive || isEditorPreviewMode) return;
+
+        float buildTime = laserLength * phaseInterval;
+        float pauseBetween = phaseInterval;
+        float teardownTime = laserLength * phaseInterval;
+        float totalCycleTime = buildTime + pauseBetween + teardownTime + activeDuration;
+
+        float t = LaserManager.Instance.GetCycleTime() % totalCycleTime;
+
+        ResetLaser();
+
+        if (t < buildTime)
+        {
+            // ѕо€вление лазера
+            int segIndex = Mathf.FloorToInt(t / phaseInterval);
+            if (segIndex == 0)
+                ReplaceSource(sourceHalf);
+            else
+                ReplaceSource(sourceFull);
+
+            for (int i = 1; i <= segIndex && i < laserLength; i++)
+            {
+                Vector3 pos = transform.position + new Vector3(direction.x, direction.y, 0) * i;
+                GameObject prefab = (i == laserLength - 1 && lastSegmentIsHalf) ? segmentHalf : segmentFull;
+                var seg = Instantiate(prefab, pos, GetRotation(), transform);
+                currentSegments.Add(seg);
+                EraseDevicesAt(pos);
+            }
+        }
+        else if (t < buildTime + pauseBetween)
+        {
+            // ѕауза между активацией и исчезновением (ничего не происходит)
+            ReplaceSource(sourceFull);
+            for (int i = 1; i < laserLength; i++)
+            {
+                Vector3 pos = transform.position + new Vector3(direction.x, direction.y, 0) * i;
+                GameObject prefab = (i == laserLength - 1 && lastSegmentIsHalf) ? segmentHalf : segmentFull;
+                var seg = Instantiate(prefab, pos, GetRotation(), transform);
+                currentSegments.Add(seg);
+            }
+        }
+        else if (t < buildTime + pauseBetween + teardownTime)
+        {
+            // »счезновение лазера
+            float timeIntoTeardown = t - buildTime - pauseBetween;
+            int remainingSegs = laserLength - Mathf.FloorToInt(timeIntoTeardown / phaseInterval);
+
+            if (remainingSegs <= 0)
+            {
+                ReplaceSource(sourceEmpty);
+            }
+            else if (remainingSegs == 1)
+            {
+                ReplaceSource(sourceHalf);
+            }
+            else
+            {
+                ReplaceSource(sourceFull);
+            }
+
+            for (int i = 1; i < remainingSegs; i++)
+            {
+                Vector3 pos = transform.position + new Vector3(direction.x, direction.y, 0) * i;
+                GameObject prefab = (i == laserLength - 1 && lastSegmentIsHalf) ? segmentHalf : segmentFull;
+                var seg = Instantiate(prefab, pos, GetRotation(), transform);
+                currentSegments.Add(seg);
+            }
+        }
+        else
+        {
+            // ѕауза после исчезновени€ (activeDuration)
+            ReplaceSource(sourceEmpty);
+        }
     }
 
     void EraseDevicesAt(Vector3 pos)
@@ -152,7 +214,6 @@ public class LaserController : MonoBehaviour
     {
         foreach (var t in deviceTags)
             if (tag == t) return true;
-
         return false;
     }
 }

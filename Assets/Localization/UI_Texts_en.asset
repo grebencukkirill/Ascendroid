@@ -221,6 +221,10 @@ MonoBehaviour:
     m_Localized: Use acceleration or slowdown devices to adjust its movement.
     m_Metadata:
       m_Items: []
+  - m_Id: 7372498046803968
+    m_Localized: The robot has reached its destination!
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
