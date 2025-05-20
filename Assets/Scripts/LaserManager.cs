@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class LaserManager : MonoBehaviour
@@ -23,13 +21,11 @@ public class LaserManager : MonoBehaviour
         startTime = Time.time;
     }
 
-    // Возвращает прошедшее время с момента старта лазерного цикла
     public float GetCycleTime()
     {
         return Time.time - startTime;
     }
 
-    // Сбросить лазерный таймер — обычно вызывается при запуске уровня
     public void ResetTimer()
     {
         startTime = Time.time;

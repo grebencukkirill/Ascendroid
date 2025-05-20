@@ -51,12 +51,12 @@ public class LevelEditor : MonoBehaviour
         audioManager.OnPlayModeReady += OnPlayModeStart;
         audioManager.OnEditModeReady += OnEditModeStart;
 
-        EnterEditorMode(); // потом уже переключение
+        EnterEditorMode(); 
     }
 
     IEnumerator InitLaserPreviews()
     {
-        yield return null; // дождаться конца кадра
+        yield return null; 
 
         foreach (LaserController laser in FindObjectsOfType<LaserController>())
         {
@@ -131,10 +131,9 @@ public class LevelEditor : MonoBehaviour
 
         LaserManager.Instance?.ResetTimer();
 
-        // После выхода из режима редактирования активируем лазеры
         foreach (LaserController laser in FindObjectsOfType<LaserController>())
         {
-            laser.StartLaser(); // запускаем лазеры
+            laser.StartLaser();
         }
     }
 

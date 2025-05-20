@@ -147,7 +147,7 @@ public class LaserController : MonoBehaviour
         }
         else if (t < buildTime + pauseBetween)
         {
-            // Пауза между активацией и исчезновением (ничего не происходит)
+            // Пауза между активацией и исчезновением
             ReplaceSource(sourceFull);
             for (int i = 1; i < laserLength; i++)
             {
@@ -186,7 +186,7 @@ public class LaserController : MonoBehaviour
         }
         else
         {
-            // Пауза после исчезновения (activeDuration)
+            // Пауза после исчезновения 
             ReplaceSource(sourceEmpty);
         }
     }

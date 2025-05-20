@@ -117,7 +117,6 @@ public class AudioManager : MonoBehaviour
 
             yield return new WaitForSecondsRealtime(fadeDuration);
 
-            // Swap sources
             if (editMode)
             {
                 var temp = activeEdit;
@@ -158,7 +157,6 @@ public class AudioManager : MonoBehaviour
         float wait = syncInterval - (GetCurrentTime() % syncInterval);
         yield return new WaitForSecondsRealtime(wait);
 
-        // --- Логика фрагмента (чтобы соблюсти структуру перехода)
         float currentTime = GetCurrentTime();
         int editFragmentIndex = Mathf.FloorToInt(currentTime / syncInterval);
         int localFragment = editFragmentIndex % 4;
@@ -166,22 +164,18 @@ public class AudioManager : MonoBehaviour
 
         float targetTime = nextFragment * syncInterval;
 
-        // Гарантируем, что не заедем в fade-зону
         if (targetTime >= loopPointPlay)
             targetTime = 0f;
 
-        // Остановить старый цикл без fade
         StopCurrentLoop();
 
         activeEdit.Stop();
         inactiveEdit.Stop();
 
-        // Запуск Play-трека на рассчитанной позиции
         activePlay.time = targetTime;
         activePlay.volume = 1f;
         activePlay.Play();
 
-        // Перезапуск зацикливания с fade'ом внутри режима
         currentLoopCoroutine = StartCoroutine(LoopWithFade(editMode: false));
         isPlayMode = true;
 
@@ -201,7 +195,6 @@ public class AudioManager : MonoBehaviour
 
         StopCurrentLoop();
 
-        // Stop play mode source IMMEDIATELY
         activePlay.Stop();
         inactivePlay.Stop();
 

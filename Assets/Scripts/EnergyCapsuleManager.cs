@@ -65,7 +65,5 @@ public class EnergyCapsuleManager : MonoBehaviour
         {
             capsule.ResetCapsule();
         }
-
-        Debug.Log("Capsules reset.");
     }
 }
